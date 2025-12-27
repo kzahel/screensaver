@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "OLED Screensaver",
+  "version": "1.0.0",
+  "description": "Auto-activating screensaver for OLED burn-in protection",
+  "permissions": ["idle"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "128": "icon128.png"
+  }
+}
