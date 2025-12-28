@@ -13,6 +13,7 @@ test.describe('Screensaver', () => {
       args: [
         `--disable-extensions-except=${extensionPath}`,
         `--load-extension=${extensionPath}`,
+        '--headless=new',
         '--no-sandbox',
       ],
     });

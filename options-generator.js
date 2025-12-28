@@ -32,17 +32,13 @@ const OptionsGenerator = {
     this.currentType = type;
 
     if (type === 'random' || type === 'black') {
-      this.container.style.display = 'none';
       return;
     }
 
     const config = ScreensaverRegistry.get(type);
     if (!config || Object.keys(config.options).length === 0) {
-      this.container.style.display = 'none';
       return;
     }
-
-    this.container.style.display = 'block';
 
     const header = document.createElement('h2');
     header.textContent = `${config.name} Options`;
@@ -200,7 +196,7 @@ const OptionsGenerator = {
     for (const [key, el] of Object.entries(this.elements)) {
       if (!el || !el.input) continue;
 
-      const eventType = el.input.type === 'range' ? 'input' : 'change';
+      const eventType = (el.input.type === 'range' || el.input.type === 'text') ? 'input' : 'change';
       el.input.addEventListener(eventType, () => {
         if (el.valueSpan) {
           el.valueSpan.textContent = el.input.value;

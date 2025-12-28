@@ -13,6 +13,7 @@ test.describe('Options UI', () => {
       args: [
         `--disable-extensions-except=${extensionPath}`,
         `--load-extension=${extensionPath}`,
+        '--headless=new',
         '--no-sandbox',
       ],
     });
@@ -33,7 +34,10 @@ test.describe('Options UI', () => {
     // Clear storage before each test to ensure isolation
     const page = await context.newPage();
     await page.goto(`chrome-extension://${extensionId}/options.html`);
-    await page.evaluate(() => chrome.storage.sync.clear());
+    await page.evaluate(async () => {
+      await chrome.storage.sync.clear();
+      await chrome.storage.local.clear();
+    });
     await page.close();
   });
 
@@ -71,6 +75,13 @@ test.describe('Options UI', () => {
 
     const screensaverOptions = page.locator('#screensaver-options');
     const screensaverType = page.locator('#screensaver-type');
+
+    // Wait for settings to be loaded and applied (dropdown should have a value)
+    await expect(screensaverType).toHaveValue('black');
+
+    // Debug: explicitly trigger the change to ensure updateOptionsUI runs
+    await screensaverType.selectOption('black');
+    await page.waitForTimeout(100);
 
     // Default is black - no options visible
     await expect(screensaverOptions).not.toHaveClass(/visible/);
