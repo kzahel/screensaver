@@ -31,6 +31,7 @@ describe('storage.js', () => {
         powerMode: 'normal',
         idleMinutes: 5,
         switchToBlackMinutes: 0,
+        dimLevel: 0,
         text: {
           showTime: true,
           showDate: true,

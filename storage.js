@@ -3,6 +3,7 @@ const DEFAULT_SETTINGS = {
   powerMode: 'normal',
   idleMinutes: 5,
   switchToBlackMinutes: 0, // 0 = disabled
+  dimLevel: 0, // 0-100, percentage of screen dimming
   text: {
     showTime: true,
     showDate: true,

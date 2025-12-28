@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const showDateEl = document.getElementById('show-date');
   const showQuotesEl = document.getElementById('show-quotes');
   const customTextEl = document.getElementById('custom-text');
+  const dimLevelEl = document.getElementById('dim-level');
+  const dimLevelValueEl = document.getElementById('dim-level-value');
   const testBtn = document.getElementById('test-btn');
 
   const settings = await loadSettings();
@@ -18,6 +20,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   idleMinutesEl.value = settings.idleMinutes;
   switchToBlackMinutesEl.value = settings.switchToBlackMinutes;
   powerModeEl.value = settings.powerMode;
+  dimLevelEl.value = settings.dimLevel;
+  dimLevelValueEl.textContent = `${settings.dimLevel}%`;
   showTimeEl.checked = settings.text.showTime;
   showDateEl.checked = settings.text.showDate;
   showQuotesEl.checked = settings.text.showQuotes;
@@ -33,11 +37,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function save() {
     const idleMinutes = Math.max(1, Math.min(60, parseInt(idleMinutesEl.value) || 5));
     const switchToBlackMinutes = Math.max(0, Math.min(60, parseInt(switchToBlackMinutesEl.value) || 0));
+    const dimLevel = parseInt(dimLevelEl.value) || 0;
 
     const newSettings = {
       screensaverType: screensaverTypeEl.value,
       idleMinutes,
       switchToBlackMinutes,
+      dimLevel,
       powerMode: powerModeEl.value,
       text: {
         showTime: showTimeEl.checked,
@@ -67,6 +73,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   showDateEl.addEventListener('change', save);
   showQuotesEl.addEventListener('change', save);
   customTextEl.addEventListener('input', save);
+  dimLevelEl.addEventListener('input', () => {
+    dimLevelValueEl.textContent = `${dimLevelEl.value}%`;
+    save();
+  });
 
   testBtn.addEventListener('click', () => {
     chrome.runtime.sendMessage({ type: 'testScreensaver' });

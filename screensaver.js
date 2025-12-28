@@ -20,6 +20,12 @@ async function initScreensaver() {
   currentType = type;
   console.log('Starting screensaver type:', type);
 
+  // Apply dim level
+  const dimOverlay = document.getElementById('dim-overlay');
+  if (dimOverlay) {
+    dimOverlay.style.opacity = settings.dimLevel / 100;
+  }
+
   startScreensaver(type, settings);
 
   // Set up switch-to-black timer if configured and not already black
