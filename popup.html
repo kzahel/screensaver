@@ -19,6 +19,17 @@
     </section>
 
     <section class="setting-group">
+      <label for="idle-minutes">Start after (minutes)</label>
+      <input type="number" id="idle-minutes" min="1" max="60" value="5">
+    </section>
+
+    <section class="setting-group">
+      <label for="switch-to-black-minutes">Switch to black after (minutes)</label>
+      <input type="number" id="switch-to-black-minutes" min="0" max="60" value="0" placeholder="0 = disabled">
+      <span class="hint">0 = never switch</span>
+    </section>
+
+    <section class="setting-group">
       <label for="power-mode">Power Management</label>
       <select id="power-mode">
         <option value="normal">Normal (allow sleep)</option>

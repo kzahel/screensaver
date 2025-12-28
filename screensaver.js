@@ -2,6 +2,8 @@ const MOUSE_MOVE_THRESHOLD = 500;
 let mouseMoveStartTime = null;
 let resetTimer = null;
 let activeScreensaver = null;
+let switchToBlackTimeout = null;
+let currentType = null;
 
 async function initScreensaver() {
   const { loadSettings } = window.ScreensaverSettings;
@@ -15,11 +17,30 @@ async function initScreensaver() {
     type = types[Math.floor(Math.random() * types.length)];
   }
 
+  currentType = type;
   console.log('Starting screensaver type:', type);
 
-  // Hide canvas for non-pipes screensavers
+  startScreensaver(type, settings);
+
+  // Set up switch-to-black timer if configured and not already black
+  if (settings.switchToBlackMinutes > 0 && type !== 'black') {
+    const delayMs = settings.switchToBlackMinutes * 60 * 1000;
+    console.log('Will switch to black in', settings.switchToBlackMinutes, 'minutes');
+
+    switchToBlackTimeout = setTimeout(() => {
+      console.log('Switching to black screen');
+      switchToBlack();
+    }, delayMs);
+  }
+}
+
+function startScreensaver(type, settings) {
   const canvas = document.getElementById('screensaver-canvas');
-  canvas.style.display = type === 'pipes' ? 'block' : 'none';
+  const textContainer = document.getElementById('text-container');
+
+  // Hide everything first
+  canvas.style.display = 'none';
+  textContainer.classList.remove('visible');
 
   switch (type) {
     case 'text':
@@ -27,15 +48,31 @@ async function initScreensaver() {
       activeScreensaver.init(settings);
       break;
     case 'pipes':
+      canvas.style.display = 'block';
       activeScreensaver = window.PipesScreensaver;
       activeScreensaver.init();
       break;
     case 'black':
     default:
-      // Black screen - nothing to initialize
       activeScreensaver = null;
       break;
   }
+}
+
+function switchToBlack() {
+  // Destroy current screensaver
+  if (activeScreensaver?.destroy) {
+    activeScreensaver.destroy();
+    activeScreensaver = null;
+  }
+
+  // Hide all elements
+  const canvas = document.getElementById('screensaver-canvas');
+  const textContainer = document.getElementById('text-container');
+  canvas.style.display = 'none';
+  textContainer.classList.remove('visible');
+
+  currentType = 'black';
 }
 
 // Handle page visibility for power saving
@@ -46,6 +83,10 @@ document.addEventListener('visibilitychange', () => {
       activeScreensaver.destroy();
       activeScreensaver = null;
     }
+    if (switchToBlackTimeout) {
+      clearTimeout(switchToBlackTimeout);
+      switchToBlackTimeout = null;
+    }
   } else {
     console.log('Page visible - resuming screensaver');
     initScreensaver();
@@ -55,6 +96,9 @@ document.addEventListener('visibilitychange', () => {
 function closeScreensaver() {
   if (activeScreensaver?.destroy) {
     activeScreensaver.destroy();
+  }
+  if (switchToBlackTimeout) {
+    clearTimeout(switchToBlackTimeout);
   }
 
   if (chrome?.runtime?.sendMessage) {

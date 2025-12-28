@@ -1,6 +1,8 @@
 const DEFAULT_SETTINGS = {
   screensaverType: 'black',
   powerMode: 'normal',
+  idleMinutes: 5,
+  switchToBlackMinutes: 0, // 0 = disabled
   text: {
     showTime: true,
     showDate: true,

@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const { loadSettings, saveSettings } = window.ScreensaverSettings;
 
   const screensaverTypeEl = document.getElementById('screensaver-type');
+  const idleMinutesEl = document.getElementById('idle-minutes');
+  const switchToBlackMinutesEl = document.getElementById('switch-to-black-minutes');
   const powerModeEl = document.getElementById('power-mode');
   const textOptionsEl = document.getElementById('text-options');
   const showTimeEl = document.getElementById('show-time');
@@ -13,6 +15,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const settings = await loadSettings();
 
   screensaverTypeEl.value = settings.screensaverType;
+  idleMinutesEl.value = settings.idleMinutes;
+  switchToBlackMinutesEl.value = settings.switchToBlackMinutes;
   powerModeEl.value = settings.powerMode;
   showTimeEl.checked = settings.text.showTime;
   showDateEl.checked = settings.text.showDate;
@@ -27,8 +31,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function save() {
+    const idleMinutes = Math.max(1, Math.min(60, parseInt(idleMinutesEl.value) || 5));
+    const switchToBlackMinutes = Math.max(0, Math.min(60, parseInt(switchToBlackMinutesEl.value) || 0));
+
     const newSettings = {
       screensaverType: screensaverTypeEl.value,
+      idleMinutes,
+      switchToBlackMinutes,
       powerMode: powerModeEl.value,
       text: {
         showTime: showTimeEl.checked,
@@ -41,7 +50,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     chrome.runtime.sendMessage({
       type: 'settingsChanged',
-      powerMode: newSettings.powerMode
+      powerMode: newSettings.powerMode,
+      idleMinutes: newSettings.idleMinutes
     });
   }
 
@@ -50,6 +60,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     save();
   });
 
+  idleMinutesEl.addEventListener('change', save);
+  switchToBlackMinutesEl.addEventListener('change', save);
   powerModeEl.addEventListener('change', save);
   showTimeEl.addEventListener('change', save);
   showDateEl.addEventListener('change', save);

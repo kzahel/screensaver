@@ -29,6 +29,8 @@ describe('storage.js', () => {
       expect(DEFAULT_SETTINGS).toEqual({
         screensaverType: 'black',
         powerMode: 'normal',
+        idleMinutes: 5,
+        switchToBlackMinutes: 0,
         text: {
           showTime: true,
           showDate: true,

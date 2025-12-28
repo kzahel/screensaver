@@ -1,17 +1,28 @@
-const IDLE_THRESHOLD_SECONDS = 300; // 5 minutes
-
+let idleThresholdSeconds = 300; // Default 5 minutes
 let screensaverWindowId = null;
 let currentPowerMode = 'normal';
 
 console.log('OLED Screensaver extension loaded');
-console.log('Idle threshold:', IDLE_THRESHOLD_SECONDS, 'seconds');
 
-// Load initial power settings
+// Load initial settings
 chrome.storage.sync.get('settings', (result) => {
   if (result.settings?.powerMode) {
     updatePowerMode(result.settings.powerMode);
   }
+  if (result.settings?.idleMinutes) {
+    updateIdleThreshold(result.settings.idleMinutes);
+  }
+  console.log('Initial settings loaded:', result.settings);
 });
+
+function updateIdleThreshold(minutes) {
+  const newThreshold = Math.max(60, minutes * 60); // Minimum 1 minute
+  if (newThreshold !== idleThresholdSeconds) {
+    idleThresholdSeconds = newThreshold;
+    chrome.idle.setDetectionInterval(idleThresholdSeconds);
+    console.log('Idle threshold updated:', idleThresholdSeconds, 'seconds');
+  }
+}
 
 function updatePowerMode(mode) {
   chrome.power.releaseKeepAwake();
@@ -52,10 +63,11 @@ async function launchScreensaver() {
   }
 }
 
-chrome.idle.setDetectionInterval(IDLE_THRESHOLD_SECONDS);
-console.log('Idle detection interval set');
+// Set initial idle detection interval
+chrome.idle.setDetectionInterval(idleThresholdSeconds);
+console.log('Idle detection interval set:', idleThresholdSeconds, 'seconds');
 
-chrome.idle.queryState(IDLE_THRESHOLD_SECONDS, (state) => {
+chrome.idle.queryState(idleThresholdSeconds, (state) => {
   console.log('Current idle state:', state);
 });
 
@@ -85,6 +97,9 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 
   if (message.type === 'settingsChanged') {
     updatePowerMode(message.powerMode);
+    if (message.idleMinutes) {
+      updateIdleThreshold(message.idleMinutes);
+    }
   }
 
   if (message.type === 'testScreensaver') {
@@ -100,7 +115,7 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 });
 
 setInterval(() => {
-  chrome.idle.queryState(IDLE_THRESHOLD_SECONDS, (state) => {
+  chrome.idle.queryState(idleThresholdSeconds, (state) => {
     console.log('Periodic check - idle state:', state);
   });
 }, 5000);
