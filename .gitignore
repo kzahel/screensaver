@@ -1,6 +1,11 @@
 # Dependencies
 node_modules/
 
+# Local IDE/tool settings
+.claude/
+.vscode/
+.idea/
+
 # Playwright
 test-results/
 playwright-report/
