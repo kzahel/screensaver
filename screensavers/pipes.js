@@ -212,6 +212,16 @@ const PipesScreensaver = {
   }
 };
 
+// Self-registration with the screensaver registry
 if (typeof window !== 'undefined') {
   window.PipesScreensaver = PipesScreensaver;
+
+  if (window.ScreensaverRegistry) {
+    ScreensaverRegistry.register('pipes', {
+      name: 'Pipes',
+      module: PipesScreensaver,
+      canvas: true,
+      options: {}  // No configurable options
+    });
+  }
 }

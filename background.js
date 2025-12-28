@@ -118,12 +118,14 @@ chrome.windows.onRemoved.addListener((windowId) => {
 // Open options page when extension icon is clicked
 chrome.action.onClicked.addListener(async () => {
   const optionsUrl = chrome.runtime.getURL('options.html');
-  const tabs = await chrome.tabs.query({});
-  const existingTab = tabs.find(tab => tab.url === optionsUrl);
+  // Use getContexts() instead of tabs.query({ url }) - works without "tabs" permission
+  const contexts = await chrome.runtime.getContexts({ contextTypes: ['TAB'] });
+  const optionsContext = contexts.find(c => c.documentUrl === optionsUrl);
 
-  if (existingTab) {
-    await chrome.tabs.update(existingTab.id, { active: true });
-    await chrome.windows.update(existingTab.windowId, { focused: true });
+  if (optionsContext) {
+    // Focus existing tab
+    await chrome.tabs.update(optionsContext.tabId, { active: true });
+    await chrome.windows.update(optionsContext.windowId, { focused: true });
   } else {
     await chrome.tabs.create({ url: optionsUrl });
   }

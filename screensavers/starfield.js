@@ -167,6 +167,31 @@ const StarfieldScreensaver = {
   }
 };
 
+// Self-registration with the screensaver registry
 if (typeof window !== 'undefined') {
   window.StarfieldScreensaver = StarfieldScreensaver;
+
+  if (window.ScreensaverRegistry) {
+    ScreensaverRegistry.register('starfield', {
+      name: 'Starfield',
+      module: StarfieldScreensaver,
+      canvas: true,
+      options: {
+        starDensity: {
+          type: 'select',
+          label: 'Star Density',
+          default: 200,
+          values: [100, 200, 400, 600],
+          labels: ['Sparse (100)', 'Normal (200)', 'Dense (400)', 'Very Dense (600)']
+        },
+        warpSpeed: {
+          type: 'range',
+          label: 'Warp Speed',
+          default: 5,
+          min: 1,
+          max: 10
+        }
+      }
+    });
+  }
 }

@@ -155,6 +155,38 @@ const TextScreensaver = {
   }
 };
 
+// Self-registration with the screensaver registry
 if (typeof window !== 'undefined') {
   window.TextScreensaver = TextScreensaver;
+
+  if (window.ScreensaverRegistry) {
+    ScreensaverRegistry.register('text', {
+      name: 'Text',
+      module: TextScreensaver,
+      canvas: false,  // Text uses DOM container, not canvas
+      options: {
+        showTime: {
+          type: 'checkbox',
+          label: 'Show Current Time',
+          default: true
+        },
+        showDate: {
+          type: 'checkbox',
+          label: 'Show Current Date',
+          default: true
+        },
+        showQuotes: {
+          type: 'checkbox',
+          label: 'Show Random Quotes',
+          default: true
+        },
+        customText: {
+          type: 'text',
+          label: 'Custom Text',
+          default: '',
+          placeholder: 'Enter custom text...'
+        }
+      }
+    });
+  }
 }

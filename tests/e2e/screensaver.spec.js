@@ -38,9 +38,18 @@ test.describe('Screensaver', () => {
     await page.close();
   });
 
+  // Helper to wait for dynamic content to load
+  async function waitForDynamicLoad(page) {
+    await page.waitForFunction(() => {
+      const select = document.querySelector('#screensaver-type');
+      return select && select.options.length > 2;
+    }, { timeout: 5000 });
+  }
+
   test('should launch screensaver via Test button', async () => {
     const optionsPage = await context.newPage();
     await optionsPage.goto(`chrome-extension://${extensionId}/options.html`);
+    await waitForDynamicLoad(optionsPage);
 
     // Set up listener before clicking
     const pagePromise = context.waitForEvent('page');
@@ -73,6 +82,7 @@ test.describe('Screensaver', () => {
     // Configure text screensaver via options page first
     const optionsPage = await context.newPage();
     await optionsPage.goto(`chrome-extension://${extensionId}/options.html`);
+    await waitForDynamicLoad(optionsPage);
     await optionsPage.locator('#screensaver-type').selectOption('text');
     await optionsPage.waitForTimeout(200);
     await optionsPage.close();
@@ -99,6 +109,7 @@ test.describe('Screensaver', () => {
     // Configure pipes screensaver via options page first
     const optionsPage = await context.newPage();
     await optionsPage.goto(`chrome-extension://${extensionId}/options.html`);
+    await waitForDynamicLoad(optionsPage);
     await optionsPage.locator('#screensaver-type').selectOption('pipes');
     await optionsPage.waitForTimeout(200);
     await optionsPage.close();
@@ -124,9 +135,10 @@ test.describe('Screensaver', () => {
     // Configure custom text via options page first
     const optionsPage = await context.newPage();
     await optionsPage.goto(`chrome-extension://${extensionId}/options.html`);
+    await waitForDynamicLoad(optionsPage);
     await optionsPage.locator('#screensaver-type').selectOption('text');
-    await expect(optionsPage.locator('#text-options')).toHaveClass(/visible/);
-    await optionsPage.locator('#custom-text').fill(customMessage);
+    await expect(optionsPage.locator('#screensaver-options')).toHaveClass(/visible/);
+    await optionsPage.locator('#customText').fill(customMessage);
     await optionsPage.waitForTimeout(300);
     await optionsPage.close();
 

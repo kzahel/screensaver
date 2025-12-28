@@ -195,6 +195,38 @@ const MystifyScreensaver = {
   }
 };
 
+// Self-registration with the screensaver registry
 if (typeof window !== 'undefined') {
   window.MystifyScreensaver = MystifyScreensaver;
+
+  if (window.ScreensaverRegistry) {
+    ScreensaverRegistry.register('mystify', {
+      name: 'Mystify',
+      module: MystifyScreensaver,
+      canvas: true,
+      options: {
+        numPolygons: {
+          type: 'select',
+          label: 'Number of Polygons',
+          default: 2,
+          values: [1, 2, 3],
+          labels: ['1', '2', '3']
+        },
+        numVertices: {
+          type: 'select',
+          label: 'Vertices per Polygon',
+          default: 4,
+          values: [3, 4, 5, 6],
+          labels: ['3 (Triangle)', '4 (Quadrilateral)', '5 (Pentagon)', '6 (Hexagon)']
+        },
+        trailLength: {
+          type: 'range',
+          label: 'Trail Length',
+          default: 50,
+          min: 10,
+          max: 100
+        }
+      }
+    });
+  }
 }

@@ -37,9 +37,19 @@ test.describe('Options UI', () => {
     await page.close();
   });
 
+  // Helper to wait for dynamic content to load
+  async function waitForDynamicLoad(page) {
+    // Wait for dropdown to have more than just Random and Black options
+    await page.waitForFunction(() => {
+      const select = document.querySelector('#screensaver-type');
+      return select && select.options.length > 2;
+    }, { timeout: 5000 });
+  }
+
   test('should load options page with default settings', async () => {
     const page = await context.newPage();
     await page.goto(`chrome-extension://${extensionId}/options.html`);
+    await waitForDynamicLoad(page);
 
     await expect(page.locator('h1')).toHaveText('OLED Screensaver');
 
@@ -54,23 +64,30 @@ test.describe('Options UI', () => {
     await page.close();
   });
 
-  test('should show text options only for text/random screensaver types', async () => {
+  test('should show screensaver options only for non-black/random types', async () => {
     const page = await context.newPage();
     await page.goto(`chrome-extension://${extensionId}/options.html`);
+    await waitForDynamicLoad(page);
 
-    const textOptions = page.locator('#text-options');
+    const screensaverOptions = page.locator('#screensaver-options');
     const screensaverType = page.locator('#screensaver-type');
 
-    await expect(textOptions).not.toHaveClass(/visible/);
+    // Default is black - no options visible
+    await expect(screensaverOptions).not.toHaveClass(/visible/);
 
+    // Select text - should show text options
     await screensaverType.selectOption('text');
-    await expect(textOptions).toHaveClass(/visible/);
+    await expect(screensaverOptions).toHaveClass(/visible/);
+    await expect(page.locator('#showTime')).toBeVisible();
 
+    // Select pipes - no configurable options
     await screensaverType.selectOption('pipes');
-    await expect(textOptions).not.toHaveClass(/visible/);
+    await expect(screensaverOptions).not.toHaveClass(/visible/);
 
-    await screensaverType.selectOption('random');
-    await expect(textOptions).toHaveClass(/visible/);
+    // Select starfield - should show starfield options
+    await screensaverType.selectOption('starfield');
+    await expect(screensaverOptions).toHaveClass(/visible/);
+    await expect(page.locator('#starDensity')).toBeVisible();
 
     await page.close();
   });
@@ -78,22 +95,24 @@ test.describe('Options UI', () => {
   test('should persist settings to storage', async () => {
     const page = await context.newPage();
     await page.goto(`chrome-extension://${extensionId}/options.html`);
+    await waitForDynamicLoad(page);
 
     await page.locator('#screensaver-type').selectOption('text');
-    await expect(page.locator('#text-options')).toHaveClass(/visible/);
+    await expect(page.locator('#screensaver-options')).toHaveClass(/visible/);
     await page.locator('#power-mode').selectOption('display');
-    await page.locator('#show-time').uncheck();
-    await page.locator('#custom-text').fill('Test Message');
+    await page.locator('#showTime').uncheck();
+    await page.locator('#customText').fill('Test Message');
 
     await page.waitForTimeout(300);
 
     await page.reload();
+    await waitForDynamicLoad(page);
 
     await expect(page.locator('#screensaver-type')).toHaveValue('text');
-    await expect(page.locator('#text-options')).toHaveClass(/visible/);
+    await expect(page.locator('#screensaver-options')).toHaveClass(/visible/);
     await expect(page.locator('#power-mode')).toHaveValue('display');
-    await expect(page.locator('#show-time')).not.toBeChecked();
-    await expect(page.locator('#custom-text')).toHaveValue('Test Message');
+    await expect(page.locator('#showTime')).not.toBeChecked();
+    await expect(page.locator('#customText')).toHaveValue('Test Message');
 
     await page.close();
   });
@@ -101,18 +120,19 @@ test.describe('Options UI', () => {
   test('should have working checkboxes in text options', async () => {
     const page = await context.newPage();
     await page.goto(`chrome-extension://${extensionId}/options.html`);
+    await waitForDynamicLoad(page);
 
     await page.locator('#screensaver-type').selectOption('text');
 
-    await expect(page.locator('#show-time')).toBeChecked();
-    await expect(page.locator('#show-date')).toBeChecked();
-    await expect(page.locator('#show-quotes')).toBeChecked();
+    await expect(page.locator('#showTime')).toBeChecked();
+    await expect(page.locator('#showDate')).toBeChecked();
+    await expect(page.locator('#showQuotes')).toBeChecked();
 
-    await page.locator('#show-time').click();
-    await expect(page.locator('#show-time')).not.toBeChecked();
+    await page.locator('#showTime').click();
+    await expect(page.locator('#showTime')).not.toBeChecked();
 
-    await page.locator('#show-date').click();
-    await expect(page.locator('#show-date')).not.toBeChecked();
+    await page.locator('#showDate').click();
+    await expect(page.locator('#showDate')).not.toBeChecked();
 
     await page.close();
   });

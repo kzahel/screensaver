@@ -1,58 +1,53 @@
-const DEFAULT_SETTINGS = {
+// Core settings (not screensaver-specific)
+const CORE_DEFAULTS = {
   screensaverType: 'black',
   powerMode: 'normal',
   idleMinutes: 5,
-  switchToBlackMinutes: 0, // 0 = disabled
-  dimLevel: 0, // 0-100, percentage of screen dimming
-  text: {
-    showTime: true,
-    showDate: true,
-    customText: '',
-    showQuotes: true
-  },
-  starfield: {
-    starDensity: 200,
-    warpSpeed: 5
-  },
-  mystify: {
-    numPolygons: 2,
-    numVertices: 4,
-    trailLength: 50
-  },
-  pyro: {
-    launchFrequency: 5,
-    explosionSize: 'medium',
-    colorMode: 'rainbow',
-    gravity: 1.0
-  }
+  switchToBlackMinutes: 0,
+  dimLevel: 0
 };
 
+// Get all defaults including screensaver-specific options from registry
+function getDefaultSettings() {
+  const defaults = { ...CORE_DEFAULTS };
+
+  // Add screensaver defaults from registry if available
+  if (typeof ScreensaverRegistry !== 'undefined') {
+    const screensaverDefaults = ScreensaverRegistry.getAllDefaults();
+    Object.assign(defaults, screensaverDefaults);
+  }
+
+  return defaults;
+}
+
 async function loadSettings() {
+  const defaults = getDefaultSettings();
+
   const [syncResult, localResult] = await Promise.all([
     chrome.storage.sync.get('settings'),
     chrome.storage.local.get('enabled')
   ]);
-  return {
-    enabled: localResult.enabled ?? true, // Local only, not synced
-    ...DEFAULT_SETTINGS,
-    ...syncResult.settings,
-    text: {
-      ...DEFAULT_SETTINGS.text,
-      ...(syncResult.settings?.text || {})
-    },
-    starfield: {
-      ...DEFAULT_SETTINGS.starfield,
-      ...(syncResult.settings?.starfield || {})
-    },
-    mystify: {
-      ...DEFAULT_SETTINGS.mystify,
-      ...(syncResult.settings?.mystify || {})
-    },
-    pyro: {
-      ...DEFAULT_SETTINGS.pyro,
-      ...(syncResult.settings?.pyro || {})
-    }
+
+  const saved = syncResult.settings || {};
+
+  // Start with defaults and saved top-level settings
+  const merged = {
+    enabled: localResult.enabled ?? true,
+    ...defaults,
+    ...saved
   };
+
+  // Deep merge each screensaver's settings from registry
+  if (typeof ScreensaverRegistry !== 'undefined') {
+    for (const type of ScreensaverRegistry.list()) {
+      merged[type] = {
+        ...ScreensaverRegistry.getDefaults(type),
+        ...(saved[type] || {})
+      };
+    }
+  }
+
+  return merged;
 }
 
 async function saveSettings(settings) {
@@ -64,5 +59,5 @@ async function saveSettings(settings) {
 }
 
 if (typeof window !== 'undefined') {
-  window.ScreensaverSettings = { DEFAULT_SETTINGS, loadSettings, saveSettings };
+  window.ScreensaverSettings = { CORE_DEFAULTS, getDefaultSettings, loadSettings, saveSettings };
 }

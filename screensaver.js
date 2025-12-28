@@ -11,9 +11,9 @@ async function initScreensaver() {
 
   let type = settings.screensaverType;
 
-  // Handle random selection
+  // Handle random selection using registry
   if (type === 'random') {
-    const types = ['black', 'text', 'pipes', 'starfield', 'mystify', 'pyro'];
+    const types = ScreensaverRegistry.listWithBlack();
     type = types[Math.floor(Math.random() * types.length)];
   }
 
@@ -48,47 +48,37 @@ function startScreensaver(type, settings) {
   canvas.style.display = 'none';
   textContainer.classList.remove('visible');
 
-  switch (type) {
-    case 'text':
-      activeScreensaver = window.TextScreensaver;
-      activeScreensaver.init(settings);
-      break;
-    case 'pipes':
-      canvas.style.display = 'block';
-      activeScreensaver = window.PipesScreensaver;
-      activeScreensaver.init();
-      break;
-    case 'starfield':
-      canvas.style.display = 'block';
-      activeScreensaver = window.StarfieldScreensaver;
-      activeScreensaver.init({
-        starDensity: settings.starfield?.starDensity || 200,
-        warpSpeed: settings.starfield?.warpSpeed || 5
-      });
-      break;
-    case 'mystify':
-      canvas.style.display = 'block';
-      activeScreensaver = window.MystifyScreensaver;
-      activeScreensaver.init({
-        numPolygons: settings.mystify?.numPolygons || 2,
-        numVertices: settings.mystify?.numVertices || 4,
-        trailLength: settings.mystify?.trailLength || 50
-      });
-      break;
-    case 'pyro':
-      canvas.style.display = 'block';
-      activeScreensaver = window.PyroScreensaver;
-      activeScreensaver.init({
-        launchFrequency: settings.pyro?.launchFrequency || 5,
-        explosionSize: settings.pyro?.explosionSize || 'medium',
-        colorMode: settings.pyro?.colorMode || 'rainbow',
-        gravity: settings.pyro?.gravity || 1.0
-      });
-      break;
-    case 'black':
-    default:
-      activeScreensaver = null;
-      break;
+  // Handle black screen
+  if (type === 'black') {
+    activeScreensaver = null;
+    return;
+  }
+
+  // Look up screensaver from registry
+  const config = ScreensaverRegistry.get(type);
+  if (!config) {
+    console.warn(`Unknown screensaver type: ${type}`);
+    activeScreensaver = null;
+    return;
+  }
+
+  // Show canvas if needed
+  if (config.canvas) {
+    canvas.style.display = 'block';
+  }
+
+  activeScreensaver = config.module;
+
+  // Get defaults from registry and merge with saved settings
+  const defaults = ScreensaverRegistry.getDefaults(type);
+  const savedSettings = settings[type] || {};
+  const opts = { ...defaults, ...savedSettings };
+
+  // Text screensaver has a different init signature (legacy)
+  if (type === 'text') {
+    activeScreensaver.init({ text: opts });
+  } else {
+    activeScreensaver.init(opts);
   }
 }
 

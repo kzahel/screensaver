@@ -23,11 +23,7 @@
         <select id="screensaver-type">
           <option value="random">Random</option>
           <option value="black">Black Screen</option>
-          <option value="text">Text</option>
-          <option value="pipes">Pipes</option>
-          <option value="starfield">Starfield</option>
-          <option value="mystify">Mystify</option>
-          <option value="pyro">Pyro! (Fireworks)</option>
+          <!-- Screensavers populated dynamically from registry -->
         </select>
       </section>
 
@@ -57,70 +53,9 @@
         <span class="hint">Darkens the screen for better OLED protection</span>
       </section>
 
-      <section class="setting-group text-options" id="text-options">
-        <h2>Text Options</h2>
-        <label>
-          <input type="checkbox" id="show-time"> Show Current Time
-        </label>
-        <label>
-          <input type="checkbox" id="show-date"> Show Current Date
-        </label>
-        <label>
-          <input type="checkbox" id="show-quotes"> Show Random Quotes
-        </label>
-        <label for="custom-text">Custom Text</label>
-        <input type="text" id="custom-text" placeholder="Enter custom text...">
-      </section>
-
-      <section class="setting-group starfield-options" id="starfield-options">
-        <h2>Starfield Options</h2>
-        <label for="star-density">Star Density</label>
-        <select id="star-density">
-          <option value="100">Sparse (100)</option>
-          <option value="200" selected>Normal (200)</option>
-          <option value="400">Dense (400)</option>
-          <option value="600">Very Dense (600)</option>
-        </select>
-        <label for="warp-speed">Warp Speed: <span id="warp-speed-value">5</span></label>
-        <input type="range" id="warp-speed" min="1" max="10" value="5">
-      </section>
-
-      <section class="setting-group mystify-options" id="mystify-options">
-        <h2>Mystify Options</h2>
-        <label for="num-polygons">Number of Polygons</label>
-        <select id="num-polygons">
-          <option value="1">1</option>
-          <option value="2" selected>2</option>
-          <option value="3">3</option>
-        </select>
-        <label for="num-vertices">Vertices per Polygon</label>
-        <select id="num-vertices">
-          <option value="3">3 (Triangle)</option>
-          <option value="4" selected>4 (Quadrilateral)</option>
-          <option value="5">5 (Pentagon)</option>
-          <option value="6">6 (Hexagon)</option>
-        </select>
-        <label for="trail-length">Trail Length: <span id="trail-length-value">50</span></label>
-        <input type="range" id="trail-length" min="10" max="100" value="50">
-      </section>
-
-      <section class="setting-group pyro-options" id="pyro-options">
-        <h2>Pyro! Options</h2>
-        <label for="launch-frequency">Launch Frequency: <span id="launch-frequency-value">5</span></label>
-        <input type="range" id="launch-frequency" min="1" max="10" value="5">
-        <label for="explosion-size">Explosion Size</label>
-        <select id="explosion-size">
-          <option value="small">Small</option>
-          <option value="medium" selected>Medium</option>
-          <option value="large">Large</option>
-        </select>
-        <label for="color-mode">Color Mode</label>
-        <select id="color-mode">
-          <option value="rainbow">Rainbow</option>
-          <option value="warm">Warm (Red/Orange/Yellow)</option>
-          <option value="cool">Cool (Blue/Purple/Green)</option>
-          <option value="monochrome">Golden</option>
-        </select>
+      <!-- Dynamically generated screensaver options -->
+      <section class="setting-group screensaver-options" id="screensaver-options">
+        <!-- Populated by options-generator.js based on selected screensaver -->
       </section>
 
       <button id="test-btn" class="test-button">Test Screensaver</button>
@@ -141,13 +76,9 @@
     </main>
   </div>
 
-  <script src="storage.js"></script>
-  <script src="quotes.js"></script>
-  <script src="screensavers/text.js"></script>
-  <script src="screensavers/pipes.js"></script>
-  <script src="screensavers/starfield.js"></script>
-  <script src="screensavers/mystify.js"></script>
-  <script src="screensavers/pyro.js"></script>
-  <script src="options.js"></script>
+  <!-- Registry and dynamic loader -->
+  <script src="registry.js"></script>
+  <script src="screensavers/index.js"></script>
+  <script src="options-loader.js"></script>
 </body>
 </html>

@@ -461,6 +461,38 @@ const PyroScreensaver = {
   }
 };
 
+// Self-registration with the screensaver registry
 if (typeof window !== 'undefined') {
   window.PyroScreensaver = PyroScreensaver;
+
+  if (window.ScreensaverRegistry) {
+    ScreensaverRegistry.register('pyro', {
+      name: 'Pyro! (Fireworks)',
+      module: PyroScreensaver,
+      canvas: true,
+      options: {
+        launchFrequency: {
+          type: 'range',
+          label: 'Launch Frequency',
+          default: 5,
+          min: 1,
+          max: 10
+        },
+        explosionSize: {
+          type: 'select',
+          label: 'Explosion Size',
+          default: 'medium',
+          values: ['small', 'medium', 'large'],
+          labels: ['Small', 'Medium', 'Large']
+        },
+        colorMode: {
+          type: 'select',
+          label: 'Color Mode',
+          default: 'rainbow',
+          values: ['rainbow', 'warm', 'cool', 'monochrome'],
+          labels: ['Rainbow', 'Warm (Red/Orange/Yellow)', 'Cool (Blue/Purple/Green)', 'Golden']
+        }
+      }
+    });
+  }
 }
