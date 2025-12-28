@@ -112,13 +112,15 @@ label:has(input[type="checkbox"]) {
   font-size: 13px;
 }
 
-.text-options {
+.text-options,
+.starfield-options {
   border-top: 1px solid #333;
   padding-top: 16px;
   display: none;
 }
 
-.text-options.visible {
+.text-options.visible,
+.starfield-options.visible {
   display: block;
 }
 

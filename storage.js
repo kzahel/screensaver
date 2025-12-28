@@ -9,6 +9,10 @@ const DEFAULT_SETTINGS = {
     showDate: true,
     customText: '',
     showQuotes: true
+  },
+  starfield: {
+    starDensity: 200,
+    warpSpeed: 5
   }
 };
 
@@ -24,6 +28,10 @@ async function loadSettings() {
     text: {
       ...DEFAULT_SETTINGS.text,
       ...(syncResult.settings?.text || {})
+    },
+    starfield: {
+      ...DEFAULT_SETTINGS.starfield,
+      ...(syncResult.settings?.starfield || {})
     }
   };
 }

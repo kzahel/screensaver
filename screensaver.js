@@ -13,7 +13,7 @@ async function initScreensaver() {
 
   // Handle random selection
   if (type === 'random') {
-    const types = ['black', 'text', 'pipes'];
+    const types = ['black', 'text', 'pipes', 'starfield'];
     type = types[Math.floor(Math.random() * types.length)];
   }
 
@@ -57,6 +57,14 @@ function startScreensaver(type, settings) {
       canvas.style.display = 'block';
       activeScreensaver = window.PipesScreensaver;
       activeScreensaver.init();
+      break;
+    case 'starfield':
+      canvas.style.display = 'block';
+      activeScreensaver = window.StarfieldScreensaver;
+      activeScreensaver.init({
+        starDensity: settings.starfield?.starDensity || 200,
+        warpSpeed: settings.starfield?.warpSpeed || 5
+      });
       break;
     case 'black':
     default:

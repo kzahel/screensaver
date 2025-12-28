@@ -25,6 +25,7 @@
           <option value="black">Black Screen</option>
           <option value="text">Text</option>
           <option value="pipes">Pipes</option>
+          <option value="starfield">Starfield</option>
         </select>
       </section>
 
@@ -69,6 +70,19 @@
         <input type="text" id="custom-text" placeholder="Enter custom text...">
       </section>
 
+      <section class="setting-group starfield-options" id="starfield-options">
+        <h2>Starfield Options</h2>
+        <label for="star-density">Star Density</label>
+        <select id="star-density">
+          <option value="100">Sparse (100)</option>
+          <option value="200" selected>Normal (200)</option>
+          <option value="400">Dense (400)</option>
+          <option value="600">Very Dense (600)</option>
+        </select>
+        <label for="warp-speed">Warp Speed: <span id="warp-speed-value">5</span></label>
+        <input type="range" id="warp-speed" min="1" max="10" value="5">
+      </section>
+
       <button id="test-btn" class="test-button">Test Screensaver</button>
     </aside>
 
@@ -91,6 +105,7 @@
   <script src="quotes.js"></script>
   <script src="screensavers/text.js"></script>
   <script src="screensavers/pipes.js"></script>
+  <script src="screensavers/starfield.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

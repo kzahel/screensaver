@@ -16,6 +16,7 @@ A comprehensive TODO list of classic screensavers to implement, organized by pla
 | Screensaver | Origin | Status |
 |-------------|--------|--------|
 | Pipes | Windows 95 OpenGL | ✅ |
+| Starfield | Windows 3.1 | ✅ |
 | Text/Clock | Generic | ✅ |
 
 ---
@@ -137,7 +138,7 @@ The first Windows to ship with built-in screensavers. Microsoft released IdleWil
 
 | Screensaver | Description | Priority | Notes |
 |-------------|-------------|----------|-------|
-| **Starfield Simulation** | Flying through space at warp speed | 🔜 | Iconic. Configurable star density and warp speed. |
+| **Starfield Simulation** | Flying through space at warp speed | ✅ | Iconic. Configurable star density and warp speed. |
 | **Flying Windows** | Windows logos flying like stars | 🔜 | Used Wingdings font for the logo |
 | **Mystify Your Mind** | Color-changing bouncing polygons with trails | 🔜 | Still in Windows 11! One of the most enduring. |
 | **Marquee** | Scrolling text message | 📋 | Customizable text |

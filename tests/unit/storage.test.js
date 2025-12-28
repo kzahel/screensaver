@@ -37,6 +37,10 @@ describe('storage.js', () => {
           showDate: true,
           customText: '',
           showQuotes: true
+        },
+        starfield: {
+          starDensity: 200,
+          warpSpeed: 5
         }
       });
     });
