@@ -8,7 +8,10 @@
     "test:unit": "jest",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
-    "test:e2e:debug": "playwright test --debug"
+    "test:e2e:debug": "playwright test --debug",
+    "generate:icons": "bash scripts/generate-icons.sh",
+    "screenshots": "node scripts/generate-screenshots.js",
+    "package": "bash scripts/package.sh"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Dark circular background -->
+  <circle cx="64" cy="64" r="60" fill="#1a1a1a"/>
+  <!-- Crescent moon -->
+  <defs>
+    <mask id="crescent">
+      <circle cx="64" cy="64" r="36" fill="white"/>
+      <circle cx="82" cy="50" r="30" fill="black"/>
+    </mask>
+  </defs>
+  <circle cx="64" cy="64" r="36" fill="#5eb3ff" mask="url(#crescent)"/>
+  <!-- Small stars -->
+  <circle cx="98" cy="82" r="3" fill="#5eb3ff" opacity="0.7"/>
+  <circle cx="105" cy="58" r="2" fill="#5eb3ff" opacity="0.5"/>
+  <circle cx="92" cy="100" r="2" fill="#5eb3ff" opacity="0.4"/>
+</svg>

@@ -3,7 +3,9 @@ let screensaverWindowId = null;
 let currentPowerMode = 'normal';
 let extensionEnabled = true; // Master switch
 
-console.log('OLED Screensaver extension loaded');
+// Service worker lifecycle: this code runs on every start (including after suspension).
+// Event listeners MUST be registered synchronously at top level for Chrome to wake the worker.
+console.log('Service worker started');
 
 // Load initial settings
 Promise.all([
@@ -44,6 +46,8 @@ function updatePowerMode(mode) {
 
   currentPowerMode = mode;
 
+  // Note: On Linux, requestKeepAwake can interfere with chrome.idle detection,
+  // causing the screensaver to never trigger. Use 'normal' mode if idle detection fails.
   if (mode === 'display') {
     chrome.power.requestKeepAwake('display');
     console.log('Power mode: keeping display on');
@@ -84,7 +88,7 @@ chrome.idle.queryState(idleThresholdSeconds, (state) => {
 });
 
 chrome.idle.onStateChanged.addListener(async (state) => {
-  console.log('>>> Idle state changed:', state, 'at', new Date().toLocaleTimeString());
+  console.log('>>> IDLE STATE CHANGED:', state, 'at', new Date().toLocaleTimeString());
 
   if (!extensionEnabled) {
     console.log('Extension disabled, ignoring idle state change');
@@ -92,7 +96,7 @@ chrome.idle.onStateChanged.addListener(async (state) => {
   }
 
   if (state === 'idle') {
-    console.log('System is idle, screensaverWindowId:', screensaverWindowId);
+    console.log('System is idle, launching screensaver...');
     await launchScreensaver();
   } else if (state === 'active') {
     console.log('System is active again');
@@ -100,6 +104,8 @@ chrome.idle.onStateChanged.addListener(async (state) => {
     console.log('System is locked');
   }
 });
+
+console.log('Idle state change listener registered');
 
 chrome.windows.onRemoved.addListener((windowId) => {
   console.log('Window removed:', windowId);
@@ -154,6 +160,6 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 setInterval(() => {
   if (!extensionEnabled) return;
   chrome.idle.queryState(idleThresholdSeconds, (state) => {
-    console.log('Periodic check - idle state:', state);
+    console.log('Periodic check - idle state:', state, 'threshold:', idleThresholdSeconds);
   });
 }, 5000);

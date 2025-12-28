@@ -27,9 +27,8 @@ const createMockChrome = () => ({
   windows: {
     create: jest.fn().mockResolvedValue({ id: 123 }),
     remove: jest.fn().mockResolvedValue(),
-    onRemoved: {
-      addListener: jest.fn()
-    }
+    update: jest.fn().mockResolvedValue({}),
+    onRemoved: { addListener: jest.fn() }
   },
   power: {
     requestKeepAwake: jest.fn(),
