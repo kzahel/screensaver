@@ -7,14 +7,34 @@ const PipesScreensaver = {
   gridSize: 20,
   lastFrameTime: 0,
   frameDelay: 50,
+  fixedWidth: null,
+  fixedHeight: null,
+  maxPipes: 6,
 
-  init() {
-    this.canvas = document.getElementById('screensaver-canvas');
+  init(options = {}) {
+    this.canvas = options.canvas || document.getElementById('screensaver-canvas');
     this.ctx = this.canvas.getContext('2d');
     this.pipes = [];
+
+    // Use fixed dimensions if provided (preview mode)
+    this.fixedWidth = options.width || null;
+    this.fixedHeight = options.height || null;
+
+    // Scale grid size for smaller preview
+    if (this.fixedWidth && this.fixedWidth < 600) {
+      this.gridSize = 10;
+      this.maxPipes = 3;
+    } else {
+      this.gridSize = 20;
+      this.maxPipes = 6;
+    }
+
     this.resize();
 
-    window.addEventListener('resize', this.handleResize);
+    // Only add resize listener if not using fixed dimensions
+    if (!this.fixedWidth) {
+      window.addEventListener('resize', this.handleResize);
+    }
 
     // Clear canvas to black
     this.ctx.fillStyle = '#000';
@@ -26,21 +46,26 @@ const PipesScreensaver = {
 
     // Add new pipes periodically
     this.pipeInterval = setInterval(() => {
-      if (this.pipes.length < 6) {
+      if (this.pipes.length < this.maxPipes) {
         this.addPipe();
       }
     }, 4000);
   },
 
   handleResize: function() {
-    if (window.PipesScreensaver.canvas) {
+    if (window.PipesScreensaver.canvas && !window.PipesScreensaver.fixedWidth) {
       window.PipesScreensaver.resize();
     }
   },
 
   resize() {
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight;
+    if (this.fixedWidth) {
+      this.canvas.width = this.fixedWidth;
+      this.canvas.height = this.fixedHeight;
+    } else {
+      this.canvas.width = window.innerWidth;
+      this.canvas.height = window.innerHeight;
+    }
     // Redraw black background after resize
     this.ctx.fillStyle = '#000';
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -180,7 +205,9 @@ const PipesScreensaver = {
       clearInterval(this.pipeInterval);
       this.pipeInterval = null;
     }
-    window.removeEventListener('resize', this.handleResize);
+    if (!this.fixedWidth) {
+      window.removeEventListener('resize', this.handleResize);
+    }
     this.pipes = [];
   }
 };

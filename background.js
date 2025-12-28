@@ -92,6 +92,11 @@ chrome.windows.onRemoved.addListener((windowId) => {
   }
 });
 
+// Open options page when extension icon is clicked
+chrome.action.onClicked.addListener(() => {
+  chrome.tabs.create({ url: chrome.runtime.getURL('options.html') });
+});
+
 chrome.runtime.onMessage.addListener((message, sender) => {
   console.log('Message received:', message, 'from:', sender.tab?.id);
 

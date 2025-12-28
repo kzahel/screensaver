@@ -32,19 +32,19 @@ test.describe('Screensaver', () => {
   test.beforeEach(async () => {
     // Clear storage and reset to defaults before each test
     const page = await context.newPage();
-    await page.goto(`chrome-extension://${extensionId}/popup.html`);
+    await page.goto(`chrome-extension://${extensionId}/options.html`);
     await page.evaluate(() => chrome.storage.sync.clear());
     await page.waitForTimeout(100);
     await page.close();
   });
 
   test('should launch screensaver via Test button', async () => {
-    const popupPage = await context.newPage();
-    await popupPage.goto(`chrome-extension://${extensionId}/popup.html`);
+    const optionsPage = await context.newPage();
+    await optionsPage.goto(`chrome-extension://${extensionId}/options.html`);
 
     // Set up listener before clicking
     const pagePromise = context.waitForEvent('page');
-    await popupPage.locator('#test-btn').click();
+    await optionsPage.locator('#test-btn').click();
     const screensaverPage = await pagePromise;
 
     expect(screensaverPage.url()).toContain('screensaver.html');
@@ -70,12 +70,12 @@ test.describe('Screensaver', () => {
   });
 
   test('should render text screensaver with visible text container', async () => {
-    // Configure text screensaver via popup first
-    const popupPage = await context.newPage();
-    await popupPage.goto(`chrome-extension://${extensionId}/popup.html`);
-    await popupPage.locator('#screensaver-type').selectOption('text');
-    await popupPage.waitForTimeout(200);
-    await popupPage.close();
+    // Configure text screensaver via options page first
+    const optionsPage = await context.newPage();
+    await optionsPage.goto(`chrome-extension://${extensionId}/options.html`);
+    await optionsPage.locator('#screensaver-type').selectOption('text');
+    await optionsPage.waitForTimeout(200);
+    await optionsPage.close();
 
     // Open screensaver directly to test rendering
     const screensaverPage = await context.newPage();
@@ -96,12 +96,12 @@ test.describe('Screensaver', () => {
   });
 
   test('should render pipes screensaver with visible canvas', async () => {
-    // Configure pipes screensaver via popup first
-    const popupPage = await context.newPage();
-    await popupPage.goto(`chrome-extension://${extensionId}/popup.html`);
-    await popupPage.locator('#screensaver-type').selectOption('pipes');
-    await popupPage.waitForTimeout(200);
-    await popupPage.close();
+    // Configure pipes screensaver via options page first
+    const optionsPage = await context.newPage();
+    await optionsPage.goto(`chrome-extension://${extensionId}/options.html`);
+    await optionsPage.locator('#screensaver-type').selectOption('pipes');
+    await optionsPage.waitForTimeout(200);
+    await optionsPage.close();
 
     // Open screensaver directly to test rendering
     const screensaverPage = await context.newPage();
@@ -121,13 +121,14 @@ test.describe('Screensaver', () => {
   test('should show custom text when configured', async () => {
     const customMessage = 'Hello E2E Test';
 
-    // Configure custom text via popup first
-    const popupPage = await context.newPage();
-    await popupPage.goto(`chrome-extension://${extensionId}/popup.html`);
-    await popupPage.locator('#screensaver-type').selectOption('text');
-    await popupPage.locator('#custom-text').fill(customMessage);
-    await popupPage.waitForTimeout(300);
-    await popupPage.close();
+    // Configure custom text via options page first
+    const optionsPage = await context.newPage();
+    await optionsPage.goto(`chrome-extension://${extensionId}/options.html`);
+    await optionsPage.locator('#screensaver-type').selectOption('text');
+    await expect(optionsPage.locator('#text-options')).toHaveClass(/visible/);
+    await optionsPage.locator('#custom-text').fill(customMessage);
+    await optionsPage.waitForTimeout(300);
+    await optionsPage.close();
 
     // Open screensaver directly
     const screensaverPage = await context.newPage();

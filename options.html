@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OLED Screensaver Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <aside class="settings-panel">
+      <h1>OLED Screensaver</h1>
+
+      <section class="setting-group">
+        <label for="screensaver-type">Screensaver Type</label>
+        <select id="screensaver-type">
+          <option value="random">Random</option>
+          <option value="black">Black Screen</option>
+          <option value="text">Text</option>
+          <option value="pipes">Pipes</option>
+        </select>
+      </section>
+
+      <section class="setting-group">
+        <label for="idle-minutes">Start after (minutes)</label>
+        <input type="number" id="idle-minutes" min="1" max="60" value="5">
+      </section>
+
+      <section class="setting-group">
+        <label for="switch-to-black-minutes">Switch to black after (minutes)</label>
+        <input type="number" id="switch-to-black-minutes" min="0" max="60" value="0" placeholder="0 = disabled">
+        <span class="hint">0 = never switch</span>
+      </section>
+
+      <section class="setting-group">
+        <label for="power-mode">Power Management</label>
+        <select id="power-mode">
+          <option value="normal">Normal (allow sleep)</option>
+          <option value="display">Keep Screen On</option>
+          <option value="system">Keep System Awake</option>
+        </select>
+      </section>
+
+      <section class="setting-group">
+        <label for="dim-level">Dim Level: <span id="dim-level-value">0%</span></label>
+        <input type="range" id="dim-level" min="0" max="90" value="0">
+        <span class="hint">Darkens the screen for better OLED protection</span>
+      </section>
+
+      <section class="setting-group text-options" id="text-options">
+        <h2>Text Options</h2>
+        <label>
+          <input type="checkbox" id="show-time"> Show Current Time
+        </label>
+        <label>
+          <input type="checkbox" id="show-date"> Show Current Date
+        </label>
+        <label>
+          <input type="checkbox" id="show-quotes"> Show Random Quotes
+        </label>
+        <label for="custom-text">Custom Text</label>
+        <input type="text" id="custom-text" placeholder="Enter custom text...">
+      </section>
+
+      <button id="test-btn" class="test-button">Test Screensaver</button>
+    </aside>
+
+    <main class="preview-panel">
+      <h2>Preview</h2>
+      <div class="preview-container" id="preview-container">
+        <canvas id="preview-canvas"></canvas>
+        <div id="preview-text-container" class="text-container">
+          <div class="time-display" id="preview-time-display"></div>
+          <div class="date-display" id="preview-date-display"></div>
+          <div class="custom-text" id="preview-custom-text"></div>
+          <div class="quote-text" id="preview-quote-text"></div>
+        </div>
+        <div id="preview-dim-overlay"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="storage.js"></script>
+  <script src="quotes.js"></script>
+  <script src="screensavers/text.js"></script>
+  <script src="screensavers/pipes.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

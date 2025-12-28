@@ -3,10 +3,14 @@ const TextScreensaver = {
   settings: null,
   cycleIntervalId: null,
   timeIntervalId: null,
+  previewMode: false,
+  idPrefix: '',
 
-  init(settings) {
+  init(settings, options = {}) {
     this.settings = settings.text;
-    this.container = document.getElementById('text-container');
+    this.previewMode = options.previewMode || false;
+    this.idPrefix = options.idPrefix || '';
+    this.container = options.container || document.getElementById('text-container');
     this.updateContent();
     this.positionContainer();
     this.show();
@@ -18,24 +22,39 @@ const TextScreensaver = {
       }, 1000);
     }
 
-    // Cycle position and quote every 8 seconds
-    this.cycleIntervalId = setInterval(() => {
-      this.hide();
-      setTimeout(() => {
-        this.positionContainer();
-        if (this.settings.showQuotes) {
-          this.updateQuoteDisplay();
-        }
-        this.show();
-      }, 1000);
-    }, 8000);
+    // Cycle position and quote every 8 seconds (skip in preview mode)
+    if (!this.previewMode) {
+      this.cycleIntervalId = setInterval(() => {
+        this.hide();
+        setTimeout(() => {
+          this.positionContainer();
+          if (this.settings.showQuotes) {
+            this.updateQuoteDisplay();
+          }
+          this.show();
+        }, 1000);
+      }, 8000);
+    }
+  },
+
+  getElement(id) {
+    const fullId = this.idPrefix + id;
+    // In preview mode, only look within the container to avoid conflicts with settings inputs
+    if (this.previewMode && this.container) {
+      return this.container.querySelector('#' + fullId);
+    }
+    // In fullscreen mode, use the container if available, otherwise document
+    if (this.container) {
+      return this.container.querySelector('#' + fullId) || document.getElementById(fullId);
+    }
+    return document.getElementById(fullId);
   },
 
   updateContent() {
-    const timeEl = document.getElementById('time-display');
-    const dateEl = document.getElementById('date-display');
-    const customEl = document.getElementById('custom-text');
-    const quoteEl = document.getElementById('quote-text');
+    const timeEl = this.getElement('time-display');
+    const dateEl = this.getElement('date-display');
+    const customEl = this.getElement('custom-text');
+    const quoteEl = this.getElement('quote-text');
 
     const now = new Date();
 
@@ -76,7 +95,7 @@ const TextScreensaver = {
   },
 
   updateTimeDisplay() {
-    const timeEl = document.getElementById('time-display');
+    const timeEl = this.getElement('time-display');
     if (timeEl && this.settings.showTime) {
       timeEl.textContent = new Date().toLocaleTimeString([], {
         hour: '2-digit',
@@ -86,13 +105,23 @@ const TextScreensaver = {
   },
 
   updateQuoteDisplay() {
-    const quoteEl = document.getElementById('quote-text');
+    const quoteEl = this.getElement('quote-text');
     if (quoteEl && this.settings.showQuotes) {
       quoteEl.textContent = window.ScreensaverQuotes.getRandomQuote();
     }
   },
 
   positionContainer() {
+    if (this.previewMode) {
+      // Center in preview mode
+      this.container.style.left = '50%';
+      this.container.style.top = '50%';
+      this.container.style.transform = 'translate(-50%, -50%)';
+      return;
+    }
+
+    // Random position for fullscreen mode
+    this.container.style.transform = '';
     const padding = 50;
     const rect = this.container.getBoundingClientRect();
     const maxX = window.innerWidth - rect.width - padding;

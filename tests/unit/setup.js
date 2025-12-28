@@ -30,6 +30,14 @@ const createMockChrome = () => ({
   power: {
     requestKeepAwake: jest.fn(),
     releaseKeepAwake: jest.fn()
+  },
+  action: {
+    onClicked: {
+      addListener: jest.fn()
+    }
+  },
+  tabs: {
+    create: jest.fn().mockResolvedValue({ id: 1 })
   }
 });
 

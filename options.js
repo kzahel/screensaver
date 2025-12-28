@@ -1,0 +1,190 @@
+document.addEventListener('DOMContentLoaded', async () => {
+  const { loadSettings, saveSettings } = window.ScreensaverSettings;
+
+  // Settings elements
+  const screensaverTypeEl = document.getElementById('screensaver-type');
+  const idleMinutesEl = document.getElementById('idle-minutes');
+  const switchToBlackMinutesEl = document.getElementById('switch-to-black-minutes');
+  const powerModeEl = document.getElementById('power-mode');
+  const textOptionsEl = document.getElementById('text-options');
+  const showTimeEl = document.getElementById('show-time');
+  const showDateEl = document.getElementById('show-date');
+  const showQuotesEl = document.getElementById('show-quotes');
+  const customTextEl = document.getElementById('custom-text');
+  const dimLevelEl = document.getElementById('dim-level');
+  const dimLevelValueEl = document.getElementById('dim-level-value');
+  const testBtn = document.getElementById('test-btn');
+
+  // Preview elements
+  const previewContainer = document.getElementById('preview-container');
+  const previewCanvas = document.getElementById('preview-canvas');
+  const previewTextContainer = document.getElementById('preview-text-container');
+  const previewDimOverlay = document.getElementById('preview-dim-overlay');
+
+  let activePreview = null;
+  let currentPreviewType = null;
+
+  // Load and apply settings
+  const settings = await loadSettings();
+
+  screensaverTypeEl.value = settings.screensaverType;
+  idleMinutesEl.value = settings.idleMinutes;
+  switchToBlackMinutesEl.value = settings.switchToBlackMinutes;
+  powerModeEl.value = settings.powerMode;
+  dimLevelEl.value = settings.dimLevel;
+  dimLevelValueEl.textContent = `${settings.dimLevel}%`;
+  showTimeEl.checked = settings.text.showTime;
+  showDateEl.checked = settings.text.showDate;
+  showQuotesEl.checked = settings.text.showQuotes;
+  customTextEl.value = settings.text.customText;
+
+  updateTextOptionsVisibility();
+  updatePreview();
+
+  function updateTextOptionsVisibility() {
+    const showText = screensaverTypeEl.value === 'text' || screensaverTypeEl.value === 'random';
+    textOptionsEl.classList.toggle('visible', showText);
+  }
+
+  function getPreviewDimensions() {
+    const rect = previewContainer.getBoundingClientRect();
+    return { width: Math.floor(rect.width), height: Math.floor(rect.height) };
+  }
+
+  function destroyPreview() {
+    if (activePreview?.destroy) {
+      activePreview.destroy();
+    }
+    activePreview = null;
+    currentPreviewType = null;
+    previewCanvas.style.display = 'none';
+    previewTextContainer.classList.remove('visible');
+    previewContainer.classList.remove('black-screen');
+  }
+
+  function updatePreview() {
+    let type = screensaverTypeEl.value;
+
+    // For random, pick a non-black type for preview
+    if (type === 'random') {
+      type = 'text'; // Default to text for random preview
+    }
+
+    // Update dim overlay
+    previewDimOverlay.style.opacity = dimLevelEl.value / 100;
+
+    // Only restart preview if type changed
+    if (type !== currentPreviewType) {
+      destroyPreview();
+      currentPreviewType = type;
+
+      if (type === 'black') {
+        previewContainer.classList.add('black-screen');
+        return;
+      }
+
+      const { width, height } = getPreviewDimensions();
+
+      if (type === 'text') {
+        previewCanvas.style.display = 'none';
+        activePreview = window.TextScreensaver;
+        activePreview.init(getCurrentSettings(), {
+          container: previewTextContainer,
+          previewMode: true,
+          idPrefix: 'preview-'
+        });
+      } else if (type === 'pipes') {
+        previewCanvas.style.display = 'block';
+        activePreview = window.PipesScreensaver;
+        activePreview.init({
+          canvas: previewCanvas,
+          width: width,
+          height: height
+        });
+      }
+    } else if (type === 'text' && activePreview) {
+      // Just update text content without restarting
+      activePreview.settings = getCurrentSettings().text;
+      activePreview.updateContent();
+    }
+  }
+
+  function getCurrentSettings() {
+    return {
+      screensaverType: screensaverTypeEl.value,
+      idleMinutes: parseInt(idleMinutesEl.value) || 5,
+      switchToBlackMinutes: parseInt(switchToBlackMinutesEl.value) || 0,
+      dimLevel: parseInt(dimLevelEl.value) || 0,
+      powerMode: powerModeEl.value,
+      text: {
+        showTime: showTimeEl.checked,
+        showDate: showDateEl.checked,
+        showQuotes: showQuotesEl.checked,
+        customText: customTextEl.value
+      }
+    };
+  }
+
+  async function save() {
+    const newSettings = getCurrentSettings();
+    newSettings.idleMinutes = Math.max(1, Math.min(60, newSettings.idleMinutes));
+    newSettings.switchToBlackMinutes = Math.max(0, Math.min(60, newSettings.switchToBlackMinutes));
+
+    await saveSettings(newSettings);
+
+    chrome.runtime.sendMessage({
+      type: 'settingsChanged',
+      powerMode: newSettings.powerMode,
+      idleMinutes: newSettings.idleMinutes
+    });
+  }
+
+  // Event listeners
+  screensaverTypeEl.addEventListener('change', () => {
+    updateTextOptionsVisibility();
+    updatePreview();
+    save();
+  });
+
+  idleMinutesEl.addEventListener('change', save);
+  switchToBlackMinutesEl.addEventListener('change', save);
+  powerModeEl.addEventListener('change', save);
+
+  showTimeEl.addEventListener('change', () => {
+    updatePreview();
+    save();
+  });
+
+  showDateEl.addEventListener('change', () => {
+    updatePreview();
+    save();
+  });
+
+  showQuotesEl.addEventListener('change', () => {
+    updatePreview();
+    save();
+  });
+
+  customTextEl.addEventListener('input', () => {
+    updatePreview();
+    save();
+  });
+
+  dimLevelEl.addEventListener('input', () => {
+    dimLevelValueEl.textContent = `${dimLevelEl.value}%`;
+    previewDimOverlay.style.opacity = dimLevelEl.value / 100;
+    save();
+  });
+
+  testBtn.addEventListener('click', () => {
+    chrome.runtime.sendMessage({ type: 'testScreensaver' });
+  });
+
+  // Handle window resize for preview
+  window.addEventListener('resize', () => {
+    if (currentPreviewType === 'pipes' && activePreview) {
+      destroyPreview();
+      updatePreview();
+    }
+  });
+});
