@@ -41,7 +41,9 @@ const createMockChrome = () => ({
     }
   },
   tabs: {
-    create: jest.fn().mockResolvedValue({ id: 1 })
+    create: jest.fn().mockResolvedValue({ id: 1 }),
+    query: jest.fn().mockResolvedValue([]),
+    update: jest.fn().mockResolvedValue({})
   }
 });
 

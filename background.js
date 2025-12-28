@@ -110,8 +110,17 @@ chrome.windows.onRemoved.addListener((windowId) => {
 });
 
 // Open options page when extension icon is clicked
-chrome.action.onClicked.addListener(() => {
-  chrome.tabs.create({ url: chrome.runtime.getURL('options.html') });
+chrome.action.onClicked.addListener(async () => {
+  const optionsUrl = chrome.runtime.getURL('options.html');
+  const tabs = await chrome.tabs.query({});
+  const existingTab = tabs.find(tab => tab.url === optionsUrl);
+
+  if (existingTab) {
+    await chrome.tabs.update(existingTab.id, { active: true });
+    await chrome.windows.update(existingTab.windowId, { focused: true });
+  } else {
+    await chrome.tabs.create({ url: optionsUrl });
+  }
 });
 
 chrome.runtime.onMessage.addListener((message, sender) => {
