@@ -16,9 +16,9 @@ Promise.all([
     if (syncResult.settings?.powerMode) {
       updatePowerMode(syncResult.settings.powerMode);
     }
-    if (syncResult.settings?.idleMinutes) {
-      updateIdleThreshold(syncResult.settings.idleMinutes);
-    }
+    // Always set idle threshold - use saved value or default
+    const minutes = syncResult.settings?.idleMinutes || 5;
+    updateIdleThreshold(minutes, true); // force=true to ensure setDetectionInterval is called
   } else {
     disableExtension();
   }
@@ -30,9 +30,9 @@ function disableExtension() {
   console.log('Extension disabled - power management released');
 }
 
-function updateIdleThreshold(minutes) {
+function updateIdleThreshold(minutes, force = false) {
   const newThreshold = Math.max(60, minutes * 60); // Minimum 1 minute
-  if (newThreshold !== idleThresholdSeconds) {
+  if (force || newThreshold !== idleThresholdSeconds) {
     idleThresholdSeconds = newThreshold;
     chrome.idle.setDetectionInterval(idleThresholdSeconds);
     console.log('Idle threshold updated:', idleThresholdSeconds, 'seconds');
@@ -78,10 +78,7 @@ async function launchScreensaver() {
   }
 }
 
-// Set initial idle detection interval
-chrome.idle.setDetectionInterval(idleThresholdSeconds);
-console.log('Idle detection interval set:', idleThresholdSeconds, 'seconds');
-
+// Query initial idle state (detection interval is set after settings load)
 chrome.idle.queryState(idleThresholdSeconds, (state) => {
   console.log('Current idle state:', state);
 });

@@ -45,11 +45,12 @@ describe('storage.js', () => {
   describe('loadSettings', () => {
     it('should return default settings when storage is empty', async () => {
       chrome.storage.sync.get.mockResolvedValue({});
+      chrome.storage.local.get.mockResolvedValue({});
 
       const settings = await loadSettings();
 
       expect(chrome.storage.sync.get).toHaveBeenCalledWith('settings');
-      expect(settings).toEqual(DEFAULT_SETTINGS);
+      expect(settings).toEqual({ enabled: true, ...DEFAULT_SETTINGS });
     });
 
     it('should merge stored settings with defaults', async () => {

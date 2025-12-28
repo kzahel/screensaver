@@ -13,9 +13,8 @@ describe('background.js message handlers', () => {
       messageListener = listener;
     });
 
-    chrome.storage.sync.get.mockImplementation((key, callback) => {
-      if (callback) callback({});
-    });
+    chrome.storage.sync.get.mockResolvedValue({});
+    chrome.storage.local.get.mockResolvedValue({});
 
     chrome.idle.queryState.mockImplementation((threshold, callback) => {
       callback('active');
@@ -49,7 +48,7 @@ describe('background.js message handlers', () => {
   describe('settingsChanged message', () => {
     it('should update power mode to display', () => {
       messageListener(
-        { type: 'settingsChanged', powerMode: 'display' },
+        { type: 'settingsChanged', enabled: true, powerMode: 'display' },
         { tab: { id: 1 } }
       );
 
@@ -59,7 +58,7 @@ describe('background.js message handlers', () => {
 
     it('should update power mode to system', () => {
       messageListener(
-        { type: 'settingsChanged', powerMode: 'system' },
+        { type: 'settingsChanged', enabled: true, powerMode: 'system' },
         { tab: { id: 1 } }
       );
 
@@ -71,7 +70,7 @@ describe('background.js message handlers', () => {
       chrome.power.requestKeepAwake.mockClear();
 
       messageListener(
-        { type: 'settingsChanged', powerMode: 'normal' },
+        { type: 'settingsChanged', enabled: true, powerMode: 'normal' },
         { tab: { id: 1 } }
       );
 

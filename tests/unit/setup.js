@@ -4,6 +4,10 @@ const createMockChrome = () => ({
     sync: {
       get: jest.fn().mockResolvedValue({}),
       set: jest.fn().mockResolvedValue()
+    },
+    local: {
+      get: jest.fn().mockResolvedValue({}),
+      set: jest.fn().mockResolvedValue()
     }
   },
   runtime: {
