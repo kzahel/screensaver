@@ -16,10 +16,72 @@
             height: 100vh;
             background-color: #000;
             cursor: none;
+            overflow: hidden;
+        }
+
+        #screensaver-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #text-container {
+            position: absolute;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            pointer-events: none;
+            max-width: 80vw;
+        }
+
+        #text-container.visible {
+            opacity: 1;
+        }
+
+        .time-display {
+            font-size: 72px;
+            font-weight: 200;
+            letter-spacing: 2px;
+        }
+
+        .date-display {
+            font-size: 24px;
+            margin-top: 8px;
+            opacity: 0.7;
+        }
+
+        .custom-text {
+            font-size: 32px;
+            margin-top: 24px;
+            font-weight: 300;
+        }
+
+        .quote-text {
+            font-size: 20px;
+            margin-top: 24px;
+            font-style: italic;
+            opacity: 0.8;
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
+    <canvas id="screensaver-canvas"></canvas>
+    <div id="text-container">
+        <div class="time-display" id="time-display"></div>
+        <div class="date-display" id="date-display"></div>
+        <div class="custom-text" id="custom-text"></div>
+        <div class="quote-text" id="quote-text"></div>
+    </div>
+
+    <script src="storage.js"></script>
+    <script src="quotes.js"></script>
+    <script src="screensavers/text.js"></script>
+    <script src="screensavers/pipes.js"></script>
     <script src="screensaver.js"></script>
 </body>
 </html>
