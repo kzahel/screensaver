@@ -13,19 +13,27 @@ const DEFAULT_SETTINGS = {
 };
 
 async function loadSettings() {
-  const result = await chrome.storage.sync.get('settings');
+  const [syncResult, localResult] = await Promise.all([
+    chrome.storage.sync.get('settings'),
+    chrome.storage.local.get('enabled')
+  ]);
   return {
+    enabled: localResult.enabled ?? true, // Local only, not synced
     ...DEFAULT_SETTINGS,
-    ...result.settings,
+    ...syncResult.settings,
     text: {
       ...DEFAULT_SETTINGS.text,
-      ...(result.settings?.text || {})
+      ...(syncResult.settings?.text || {})
     }
   };
 }
 
 async function saveSettings(settings) {
-  await chrome.storage.sync.set({ settings });
+  const { enabled, ...syncSettings } = settings;
+  await Promise.all([
+    chrome.storage.sync.set({ settings: syncSettings }),
+    chrome.storage.local.set({ enabled })
+  ]);
 }
 
 if (typeof window !== 'undefined') {

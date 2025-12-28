@@ -1,19 +1,34 @@
 let idleThresholdSeconds = 300; // Default 5 minutes
 let screensaverWindowId = null;
 let currentPowerMode = 'normal';
+let extensionEnabled = true; // Master switch
 
 console.log('OLED Screensaver extension loaded');
 
 // Load initial settings
-chrome.storage.sync.get('settings', (result) => {
-  if (result.settings?.powerMode) {
-    updatePowerMode(result.settings.powerMode);
+Promise.all([
+  chrome.storage.sync.get('settings'),
+  chrome.storage.local.get('enabled')
+]).then(([syncResult, localResult]) => {
+  extensionEnabled = localResult.enabled ?? true;
+
+  if (extensionEnabled) {
+    if (syncResult.settings?.powerMode) {
+      updatePowerMode(syncResult.settings.powerMode);
+    }
+    if (syncResult.settings?.idleMinutes) {
+      updateIdleThreshold(syncResult.settings.idleMinutes);
+    }
+  } else {
+    disableExtension();
   }
-  if (result.settings?.idleMinutes) {
-    updateIdleThreshold(result.settings.idleMinutes);
-  }
-  console.log('Initial settings loaded:', result.settings);
+  console.log('Initial settings loaded:', { enabled: extensionEnabled, ...syncResult.settings });
 });
+
+function disableExtension() {
+  chrome.power.releaseKeepAwake();
+  console.log('Extension disabled - power management released');
+}
 
 function updateIdleThreshold(minutes) {
   const newThreshold = Math.max(60, minutes * 60); // Minimum 1 minute
@@ -74,6 +89,11 @@ chrome.idle.queryState(idleThresholdSeconds, (state) => {
 chrome.idle.onStateChanged.addListener(async (state) => {
   console.log('>>> Idle state changed:', state, 'at', new Date().toLocaleTimeString());
 
+  if (!extensionEnabled) {
+    console.log('Extension disabled, ignoring idle state change');
+    return;
+  }
+
   if (state === 'idle') {
     console.log('System is idle, screensaverWindowId:', screensaverWindowId);
     await launchScreensaver();
@@ -101,13 +121,19 @@ chrome.runtime.onMessage.addListener((message, sender) => {
   console.log('Message received:', message, 'from:', sender.tab?.id);
 
   if (message.type === 'settingsChanged') {
-    updatePowerMode(message.powerMode);
-    if (message.idleMinutes) {
-      updateIdleThreshold(message.idleMinutes);
+    extensionEnabled = message.enabled;
+
+    if (extensionEnabled) {
+      updatePowerMode(message.powerMode);
+      if (message.idleMinutes) {
+        updateIdleThreshold(message.idleMinutes);
+      }
+    } else {
+      disableExtension();
     }
   }
 
-  if (message.type === 'testScreensaver') {
+  if (message.type === 'testScreensaver' && extensionEnabled) {
     launchScreensaver();
   }
 
@@ -120,6 +146,7 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 });
 
 setInterval(() => {
+  if (!extensionEnabled) return;
   chrome.idle.queryState(idleThresholdSeconds, (state) => {
     console.log('Periodic check - idle state:', state);
   });

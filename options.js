@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const { loadSettings, saveSettings } = window.ScreensaverSettings;
 
   // Settings elements
+  const settingsPanel = document.querySelector('.settings-panel');
+  const enabledCheckbox = document.getElementById('enabled-checkbox');
   const screensaverTypeEl = document.getElementById('screensaver-type');
   const idleMinutesEl = document.getElementById('idle-minutes');
   const switchToBlackMinutesEl = document.getElementById('switch-to-black-minutes');
@@ -27,6 +29,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load and apply settings
   const settings = await loadSettings();
 
+  enabledCheckbox.checked = settings.enabled;
   screensaverTypeEl.value = settings.screensaverType;
   idleMinutesEl.value = settings.idleMinutes;
   switchToBlackMinutesEl.value = settings.switchToBlackMinutes;
@@ -38,8 +41,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   showQuotesEl.checked = settings.text.showQuotes;
   customTextEl.value = settings.text.customText;
 
+  updateEnabledState();
   updateTextOptionsVisibility();
   updatePreview();
+
+  function updateEnabledState() {
+    settingsPanel.classList.toggle('disabled', !enabledCheckbox.checked);
+  }
 
   function updateTextOptionsVisibility() {
     const showText = screensaverTypeEl.value === 'text' || screensaverTypeEl.value === 'random';
@@ -111,6 +119,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function getCurrentSettings() {
     return {
+      enabled: enabledCheckbox.checked,
       screensaverType: screensaverTypeEl.value,
       idleMinutes: parseInt(idleMinutesEl.value) || 5,
       switchToBlackMinutes: parseInt(switchToBlackMinutesEl.value) || 0,
@@ -134,12 +143,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     chrome.runtime.sendMessage({
       type: 'settingsChanged',
+      enabled: newSettings.enabled,
       powerMode: newSettings.powerMode,
       idleMinutes: newSettings.idleMinutes
     });
   }
 
   // Event listeners
+  enabledCheckbox.addEventListener('change', () => {
+    updateEnabledState();
+    save();
+  });
+
   screensaverTypeEl.addEventListener('change', () => {
     updateTextOptionsVisibility();
     updatePreview();
