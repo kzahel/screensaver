@@ -18,6 +18,8 @@ A comprehensive TODO list of classic screensavers to implement, organized by pla
 | Pipes | Windows 95 OpenGL | ✅ |
 | Starfield | Windows 3.1 | ✅ |
 | Text/Clock | Generic | ✅ |
+| Mystify | Windows 3.1 | ✅ |
+| Pyro! | Mac 1987 | ✅ |
 
 ---
 
@@ -140,7 +142,7 @@ The first Windows to ship with built-in screensavers. Microsoft released IdleWil
 |-------------|-------------|----------|-------|
 | **Starfield Simulation** | Flying through space at warp speed | ✅ | Iconic. Configurable star density and warp speed. |
 | **Flying Windows** | Windows logos flying like stars | 🔜 | Used Wingdings font for the logo |
-| **Mystify Your Mind** | Color-changing bouncing polygons with trails | 🔜 | Still in Windows 11! One of the most enduring. |
+| **Mystify Your Mind** | Color-changing bouncing polygons with trails | ✅ | Still in Windows 11! One of the most enduring. |
 | **Marquee** | Scrolling text message | 📋 | Customizable text |
 
 ### Windows 95 / NT 4.0 (1995)
@@ -199,7 +201,7 @@ The Windows OpenGL team created these screensavers after an internal contest. Th
 
 | Screensaver | Description | Priority | Notes |
 |-------------|-------------|----------|-------|
-| **Pyro!** | Fireworks display | 🔜 | One of the first Mac screensavers. Written by Steve Brecher (who later became a pro poker player!) |
+| **Pyro!** | Fireworks display | ✅ | One of the first Mac screensavers. Written by Steve Brecher (who later became a pro poker player!) |
 
 ### DarkSide of the Mac (Tom Dowdy/Apple, System 7)
 

@@ -26,6 +26,8 @@
           <option value="text">Text</option>
           <option value="pipes">Pipes</option>
           <option value="starfield">Starfield</option>
+          <option value="mystify">Mystify</option>
+          <option value="pyro">Pyro! (Fireworks)</option>
         </select>
       </section>
 
@@ -83,6 +85,44 @@
         <input type="range" id="warp-speed" min="1" max="10" value="5">
       </section>
 
+      <section class="setting-group mystify-options" id="mystify-options">
+        <h2>Mystify Options</h2>
+        <label for="num-polygons">Number of Polygons</label>
+        <select id="num-polygons">
+          <option value="1">1</option>
+          <option value="2" selected>2</option>
+          <option value="3">3</option>
+        </select>
+        <label for="num-vertices">Vertices per Polygon</label>
+        <select id="num-vertices">
+          <option value="3">3 (Triangle)</option>
+          <option value="4" selected>4 (Quadrilateral)</option>
+          <option value="5">5 (Pentagon)</option>
+          <option value="6">6 (Hexagon)</option>
+        </select>
+        <label for="trail-length">Trail Length: <span id="trail-length-value">50</span></label>
+        <input type="range" id="trail-length" min="10" max="100" value="50">
+      </section>
+
+      <section class="setting-group pyro-options" id="pyro-options">
+        <h2>Pyro! Options</h2>
+        <label for="launch-frequency">Launch Frequency: <span id="launch-frequency-value">5</span></label>
+        <input type="range" id="launch-frequency" min="1" max="10" value="5">
+        <label for="explosion-size">Explosion Size</label>
+        <select id="explosion-size">
+          <option value="small">Small</option>
+          <option value="medium" selected>Medium</option>
+          <option value="large">Large</option>
+        </select>
+        <label for="color-mode">Color Mode</label>
+        <select id="color-mode">
+          <option value="rainbow">Rainbow</option>
+          <option value="warm">Warm (Red/Orange/Yellow)</option>
+          <option value="cool">Cool (Blue/Purple/Green)</option>
+          <option value="monochrome">Golden</option>
+        </select>
+      </section>
+
       <button id="test-btn" class="test-button">Test Screensaver</button>
     </aside>
 
@@ -106,6 +146,8 @@
   <script src="screensavers/text.js"></script>
   <script src="screensavers/pipes.js"></script>
   <script src="screensavers/starfield.js"></script>
+  <script src="screensavers/mystify.js"></script>
+  <script src="screensavers/pyro.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

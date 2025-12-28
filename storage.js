@@ -13,6 +13,17 @@ const DEFAULT_SETTINGS = {
   starfield: {
     starDensity: 200,
     warpSpeed: 5
+  },
+  mystify: {
+    numPolygons: 2,
+    numVertices: 4,
+    trailLength: 50
+  },
+  pyro: {
+    launchFrequency: 5,
+    explosionSize: 'medium',
+    colorMode: 'rainbow',
+    gravity: 1.0
   }
 };
 
@@ -32,6 +43,14 @@ async function loadSettings() {
     starfield: {
       ...DEFAULT_SETTINGS.starfield,
       ...(syncResult.settings?.starfield || {})
+    },
+    mystify: {
+      ...DEFAULT_SETTINGS.mystify,
+      ...(syncResult.settings?.mystify || {})
+    },
+    pyro: {
+      ...DEFAULT_SETTINGS.pyro,
+      ...(syncResult.settings?.pyro || {})
     }
   };
 }

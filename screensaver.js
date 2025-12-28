@@ -13,7 +13,7 @@ async function initScreensaver() {
 
   // Handle random selection
   if (type === 'random') {
-    const types = ['black', 'text', 'pipes', 'starfield'];
+    const types = ['black', 'text', 'pipes', 'starfield', 'mystify', 'pyro'];
     type = types[Math.floor(Math.random() * types.length)];
   }
 
@@ -64,6 +64,25 @@ function startScreensaver(type, settings) {
       activeScreensaver.init({
         starDensity: settings.starfield?.starDensity || 200,
         warpSpeed: settings.starfield?.warpSpeed || 5
+      });
+      break;
+    case 'mystify':
+      canvas.style.display = 'block';
+      activeScreensaver = window.MystifyScreensaver;
+      activeScreensaver.init({
+        numPolygons: settings.mystify?.numPolygons || 2,
+        numVertices: settings.mystify?.numVertices || 4,
+        trailLength: settings.mystify?.trailLength || 50
+      });
+      break;
+    case 'pyro':
+      canvas.style.display = 'block';
+      activeScreensaver = window.PyroScreensaver;
+      activeScreensaver.init({
+        launchFrequency: settings.pyro?.launchFrequency || 5,
+        explosionSize: settings.pyro?.explosionSize || 'medium',
+        colorMode: settings.pyro?.colorMode || 'rainbow',
+        gravity: settings.pyro?.gravity || 1.0
       });
       break;
     case 'black':

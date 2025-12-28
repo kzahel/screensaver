@@ -23,6 +23,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   const warpSpeedEl = document.getElementById('warp-speed');
   const warpSpeedValueEl = document.getElementById('warp-speed-value');
 
+  // Mystify elements
+  const mystifyOptionsEl = document.getElementById('mystify-options');
+  const numPolygonsEl = document.getElementById('num-polygons');
+  const numVerticesEl = document.getElementById('num-vertices');
+  const trailLengthEl = document.getElementById('trail-length');
+  const trailLengthValueEl = document.getElementById('trail-length-value');
+
+  // Pyro elements
+  const pyroOptionsEl = document.getElementById('pyro-options');
+  const launchFrequencyEl = document.getElementById('launch-frequency');
+  const launchFrequencyValueEl = document.getElementById('launch-frequency-value');
+  const explosionSizeEl = document.getElementById('explosion-size');
+  const colorModeEl = document.getElementById('color-mode');
+
   // Preview elements
   const previewContainer = document.getElementById('preview-container');
   const previewCanvas = document.getElementById('preview-canvas');
@@ -49,6 +63,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   starDensityEl.value = settings.starfield?.starDensity || 200;
   warpSpeedEl.value = settings.starfield?.warpSpeed || 5;
   warpSpeedValueEl.textContent = settings.starfield?.warpSpeed || 5;
+  numPolygonsEl.value = settings.mystify?.numPolygons || 2;
+  numVerticesEl.value = settings.mystify?.numVertices || 4;
+  trailLengthEl.value = settings.mystify?.trailLength || 50;
+  trailLengthValueEl.textContent = settings.mystify?.trailLength || 50;
+  launchFrequencyEl.value = settings.pyro?.launchFrequency || 5;
+  launchFrequencyValueEl.textContent = settings.pyro?.launchFrequency || 5;
+  explosionSizeEl.value = settings.pyro?.explosionSize || 'medium';
+  colorModeEl.value = settings.pyro?.colorMode || 'rainbow';
 
   updateEnabledState();
   updateOptionsVisibility();
@@ -62,8 +84,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const type = screensaverTypeEl.value;
     const showText = type === 'text' || type === 'random';
     const showStarfield = type === 'starfield';
+    const showMystify = type === 'mystify';
+    const showPyro = type === 'pyro';
     textOptionsEl.classList.toggle('visible', showText);
     starfieldOptionsEl.classList.toggle('visible', showStarfield);
+    mystifyOptionsEl.classList.toggle('visible', showMystify);
+    pyroOptionsEl.classList.toggle('visible', showPyro);
   }
 
   function getPreviewDimensions() {
@@ -131,6 +157,28 @@ document.addEventListener('DOMContentLoaded', async () => {
           starDensity: parseInt(starDensityEl.value),
           warpSpeed: parseInt(warpSpeedEl.value)
         });
+      } else if (type === 'mystify') {
+        previewCanvas.style.display = 'block';
+        activePreview = window.MystifyScreensaver;
+        activePreview.init({
+          canvas: previewCanvas,
+          width: width,
+          height: height,
+          numPolygons: parseInt(numPolygonsEl.value),
+          numVertices: parseInt(numVerticesEl.value),
+          trailLength: parseInt(trailLengthEl.value)
+        });
+      } else if (type === 'pyro') {
+        previewCanvas.style.display = 'block';
+        activePreview = window.PyroScreensaver;
+        activePreview.init({
+          canvas: previewCanvas,
+          width: width,
+          height: height,
+          launchFrequency: parseInt(launchFrequencyEl.value),
+          explosionSize: explosionSizeEl.value,
+          colorMode: colorModeEl.value
+        });
       }
     } else if (type === 'text' && activePreview) {
       // Just update text content without restarting
@@ -156,6 +204,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       starfield: {
         starDensity: parseInt(starDensityEl.value) || 200,
         warpSpeed: parseInt(warpSpeedEl.value) || 5
+      },
+      mystify: {
+        numPolygons: parseInt(numPolygonsEl.value) || 2,
+        numVertices: parseInt(numVerticesEl.value) || 4,
+        trailLength: parseInt(trailLengthEl.value) || 50
+      },
+      pyro: {
+        launchFrequency: parseInt(launchFrequencyEl.value) || 5,
+        explosionSize: explosionSizeEl.value || 'medium',
+        colorMode: colorModeEl.value || 'rainbow'
       }
     };
   }
@@ -230,13 +288,51 @@ document.addEventListener('DOMContentLoaded', async () => {
     save();
   });
 
+  numPolygonsEl.addEventListener('change', () => {
+    destroyPreview();
+    updatePreview();
+    save();
+  });
+
+  numVerticesEl.addEventListener('change', () => {
+    destroyPreview();
+    updatePreview();
+    save();
+  });
+
+  trailLengthEl.addEventListener('input', () => {
+    trailLengthValueEl.textContent = trailLengthEl.value;
+    destroyPreview();
+    updatePreview();
+    save();
+  });
+
+  launchFrequencyEl.addEventListener('input', () => {
+    launchFrequencyValueEl.textContent = launchFrequencyEl.value;
+    destroyPreview();
+    updatePreview();
+    save();
+  });
+
+  explosionSizeEl.addEventListener('change', () => {
+    destroyPreview();
+    updatePreview();
+    save();
+  });
+
+  colorModeEl.addEventListener('change', () => {
+    destroyPreview();
+    updatePreview();
+    save();
+  });
+
   testBtn.addEventListener('click', () => {
     chrome.runtime.sendMessage({ type: 'testScreensaver' });
   });
 
   // Handle window resize for preview
   window.addEventListener('resize', () => {
-    if ((currentPreviewType === 'pipes' || currentPreviewType === 'starfield') && activePreview) {
+    if ((currentPreviewType === 'pipes' || currentPreviewType === 'starfield' || currentPreviewType === 'mystify' || currentPreviewType === 'pyro') && activePreview) {
       destroyPreview();
       updatePreview();
     }

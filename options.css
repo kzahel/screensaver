@@ -113,14 +113,18 @@ label:has(input[type="checkbox"]) {
 }
 
 .text-options,
-.starfield-options {
+.starfield-options,
+.mystify-options,
+.pyro-options {
   border-top: 1px solid #333;
   padding-top: 16px;
   display: none;
 }
 
 .text-options.visible,
-.starfield-options.visible {
+.starfield-options.visible,
+.mystify-options.visible,
+.pyro-options.visible {
   display: block;
 }
 
