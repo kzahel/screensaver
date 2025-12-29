@@ -18,6 +18,7 @@
   const randomCycleSectionEl = document.getElementById('random-cycle-section');
   const randomPoolSectionEl = document.getElementById('random-pool-section');
   const randomCycleMinutesEl = document.getElementById('random-cycle-minutes');
+  const randomCycleValueEl = document.getElementById('random-cycle-value');
   const randomPoolCheckboxesEl = document.getElementById('random-pool-checkboxes');
 
   // Preview elements
@@ -32,6 +33,7 @@
   let activePreview = null;
   let currentPreviewType = null;
   let settings = null;
+  let previewCycleInterval = null;
 
   // Initialize options generator
   OptionsGenerator.init('screensaver-options');
@@ -56,11 +58,25 @@
 
   updateEnabledState();
   updateRandomOptionsVisibility();
+  updateCycleValueDisplay();
   updateOptionsUI();
   updatePreview();
+  updatePreviewCycling();
 
   function updateEnabledState() {
     settingsPanel.classList.toggle('disabled', !enabledCheckbox.checked);
+  }
+
+  function formatCycleTime(minutes) {
+    if (minutes === 0) return 'never';
+    if (minutes < 1) return `${minutes * 60} seconds`;
+    if (minutes === 1) return '1 minute';
+    return `${minutes} minutes`;
+  }
+
+  function updateCycleValueDisplay() {
+    const minutes = parseFloat(randomCycleMinutesEl.value) || 0;
+    randomCycleValueEl.textContent = formatCycleTime(minutes);
   }
 
   function updateRandomOptionsVisibility() {
@@ -164,6 +180,33 @@
     previewCanvas.style.display = 'none';
     previewTextContainer.classList.remove('visible');
     previewContainer.classList.remove('black-screen');
+  }
+
+  function clearPreviewCycling() {
+    if (previewCycleInterval) {
+      clearInterval(previewCycleInterval);
+      previewCycleInterval = null;
+    }
+  }
+
+  function updatePreviewCycling() {
+    clearPreviewCycling();
+
+    const isRandom = screensaverTypeEl.value === 'random';
+    const cycleMinutes = parseFloat(randomCycleMinutesEl.value) || 0;
+
+    if (isRandom && cycleMinutes > 0) {
+      const cycleMs = cycleMinutes * 60 * 1000;
+      previewCycleInterval = setInterval(() => {
+        cyclePreviewToNextRandom();
+      }, cycleMs);
+    }
+  }
+
+  function cyclePreviewToNextRandom() {
+    destroyPreview();
+    currentPreviewType = null; // Force new random selection
+    updatePreview();
   }
 
   function getRandomPreviewType() {
@@ -297,10 +340,15 @@
     updateOptionsUI();
     destroyPreview();
     updatePreview();
+    updatePreviewCycling();
     save();
   });
 
-  randomCycleMinutesEl.addEventListener('change', save);
+  randomCycleMinutesEl.addEventListener('input', () => {
+    updateCycleValueDisplay();
+    updatePreviewCycling();
+    save();
+  });
 
   idleMinutesEl.addEventListener('change', save);
   switchToBlackMinutesEl.addEventListener('change', save);

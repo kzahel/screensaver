@@ -12,6 +12,9 @@ const Cars1Screensaver = {
   // Collections
   vehicles: [],
 
+  // Resolution-independent scale factor (calculated in resize)
+  baseScale: 1,
+
   // Configuration
   vehicleCount: 8,
   speed: 2,
@@ -88,6 +91,8 @@ const Cars1Screensaver = {
       this.canvas.width = window.innerWidth;
       this.canvas.height = window.innerHeight;
     }
+    // Calculate resolution-independent scale factor (800px is reference size)
+    this.baseScale = Math.min(this.canvas.width, this.canvas.height) / 800;
   },
 
   initVehicles() {
@@ -184,16 +189,19 @@ const Cars1Screensaver = {
   },
 
   getVehicleWidth(type) {
-    switch (type) {
-      case 'bus': return 120;
-      case 'firetruck': return 100;
-      case 'truck': return 80;
-      default: return 70;
-    }
+    const base = (() => {
+      switch (type) {
+        case 'bus': return 120;
+        case 'firetruck': return 100;
+        case 'truck': return 80;
+        default: return 70;
+      }
+    })();
+    return base * this.baseScale;
   },
 
   getVehicleHeight(type) {
-    return 40;
+    return 40 * this.baseScale;
   },
 
   // Draw a simple wheel with hubcap
@@ -223,7 +231,8 @@ const Cars1Screensaver = {
 
   drawSedan(vehicle) {
     const ctx = this.ctx;
-    const { x, y, scale, hue, wheelRotation, rotation } = vehicle;
+    const { x, y, hue, wheelRotation, rotation } = vehicle;
+    const s = vehicle.scale * this.baseScale; // Combined scale factor
 
     ctx.save();
     ctx.translate(x, y);
@@ -234,53 +243,54 @@ const Cars1Screensaver = {
     // Car body (main)
     ctx.fillStyle = bodyColor;
     ctx.beginPath();
-    ctx.roundRect(-30 * scale, -8 * scale, 60 * scale, 24 * scale, 4 * scale);
+    ctx.roundRect(-30 * s, -8 * s, 60 * s, 24 * s, 4 * s);
     ctx.fill();
 
     // Cabin/roof
     ctx.fillStyle = bodyColor;
     ctx.beginPath();
-    ctx.roundRect(-15 * scale, -20 * scale, 35 * scale, 14 * scale, 3 * scale);
+    ctx.roundRect(-15 * s, -20 * s, 35 * s, 14 * s, 3 * s);
     ctx.fill();
 
     // Windows
     ctx.fillStyle = '#87CEEB';
     ctx.beginPath();
-    ctx.roundRect(-12 * scale, -18 * scale, 14 * scale, 10 * scale, 2 * scale);
+    ctx.roundRect(-12 * s, -18 * s, 14 * s, 10 * s, 2 * s);
     ctx.fill();
     ctx.beginPath();
-    ctx.roundRect(5 * scale, -18 * scale, 12 * scale, 10 * scale, 2 * scale);
+    ctx.roundRect(5 * s, -18 * s, 12 * s, 10 * s, 2 * s);
     ctx.fill();
 
     // Outline
     ctx.strokeStyle = '#222';
-    ctx.lineWidth = 2 * scale;
+    ctx.lineWidth = 2 * s;
     ctx.beginPath();
-    ctx.roundRect(-30 * scale, -8 * scale, 60 * scale, 24 * scale, 4 * scale);
+    ctx.roundRect(-30 * s, -8 * s, 60 * s, 24 * s, 4 * s);
     ctx.stroke();
 
     // Headlight
     ctx.fillStyle = '#FFFF88';
     ctx.beginPath();
-    ctx.arc(28 * scale, 2 * scale, 4 * scale, 0, Math.PI * 2);
+    ctx.arc(28 * s, 2 * s, 4 * s, 0, Math.PI * 2);
     ctx.fill();
 
     // Taillight
     ctx.fillStyle = '#FF4444';
     ctx.beginPath();
-    ctx.arc(-28 * scale, 2 * scale, 3 * scale, 0, Math.PI * 2);
+    ctx.arc(-28 * s, 2 * s, 3 * s, 0, Math.PI * 2);
     ctx.fill();
 
     // Wheels (relative to car body)
-    this.drawWheel(-18 * scale, 12 * scale, 10 * scale, wheelRotation);
-    this.drawWheel(18 * scale, 12 * scale, 10 * scale, wheelRotation);
+    this.drawWheel(-18 * s, 12 * s, 10 * s, wheelRotation);
+    this.drawWheel(18 * s, 12 * s, 10 * s, wheelRotation);
 
     ctx.restore();
   },
 
   drawTruck(vehicle) {
     const ctx = this.ctx;
-    const { x, y, scale, hue, wheelRotation, rotation } = vehicle;
+    const { x, y, hue, wheelRotation, rotation } = vehicle;
+    const s = vehicle.scale * this.baseScale; // Combined scale factor
 
     ctx.save();
     ctx.translate(x, y);
@@ -291,41 +301,42 @@ const Cars1Screensaver = {
     // Truck bed
     ctx.fillStyle = `hsl(${hue}, 60%, 40%)`;
     ctx.beginPath();
-    ctx.roundRect(-35 * scale, -5 * scale, 40 * scale, 20 * scale, 2 * scale);
+    ctx.roundRect(-35 * s, -5 * s, 40 * s, 20 * s, 2 * s);
     ctx.fill();
     ctx.strokeStyle = '#222';
-    ctx.lineWidth = 2 * scale;
+    ctx.lineWidth = 2 * s;
     ctx.stroke();
 
     // Cab
     ctx.fillStyle = bodyColor;
     ctx.beginPath();
-    ctx.roundRect(5 * scale, -18 * scale, 30 * scale, 33 * scale, 4 * scale);
+    ctx.roundRect(5 * s, -18 * s, 30 * s, 33 * s, 4 * s);
     ctx.fill();
     ctx.stroke();
 
     // Window
     ctx.fillStyle = '#87CEEB';
     ctx.beginPath();
-    ctx.roundRect(10 * scale, -14 * scale, 20 * scale, 12 * scale, 2 * scale);
+    ctx.roundRect(10 * s, -14 * s, 20 * s, 12 * s, 2 * s);
     ctx.fill();
 
     // Headlight
     ctx.fillStyle = '#FFFF88';
     ctx.beginPath();
-    ctx.arc(33 * scale, 5 * scale, 4 * scale, 0, Math.PI * 2);
+    ctx.arc(33 * s, 5 * s, 4 * s, 0, Math.PI * 2);
     ctx.fill();
 
     // Wheels
-    this.drawWheel(-22 * scale, 12 * scale, 10 * scale, wheelRotation);
-    this.drawWheel(22 * scale, 12 * scale, 10 * scale, wheelRotation);
+    this.drawWheel(-22 * s, 12 * s, 10 * s, wheelRotation);
+    this.drawWheel(22 * s, 12 * s, 10 * s, wheelRotation);
 
     ctx.restore();
   },
 
   drawBus(vehicle) {
     const ctx = this.ctx;
-    const { x, y, scale, hue, wheelRotation, rotation } = vehicle;
+    const { x, y, hue, wheelRotation, rotation } = vehicle;
+    const s = vehicle.scale * this.baseScale; // Combined scale factor
 
     ctx.save();
     ctx.translate(x, y);
@@ -336,50 +347,51 @@ const Cars1Screensaver = {
     // Bus body
     ctx.fillStyle = bodyColor;
     ctx.beginPath();
-    ctx.roundRect(-55 * scale, -18 * scale, 110 * scale, 35 * scale, 5 * scale);
+    ctx.roundRect(-55 * s, -18 * s, 110 * s, 35 * s, 5 * s);
     ctx.fill();
     ctx.strokeStyle = '#222';
-    ctx.lineWidth = 2 * scale;
+    ctx.lineWidth = 2 * s;
     ctx.stroke();
 
     // Windows
     ctx.fillStyle = '#87CEEB';
     for (let i = 0; i < 5; i++) {
       ctx.beginPath();
-      ctx.roundRect((-45 + i * 20) * scale, -14 * scale, 14 * scale, 12 * scale, 2 * scale);
+      ctx.roundRect((-45 + i * 20) * s, -14 * s, 14 * s, 12 * s, 2 * s);
       ctx.fill();
     }
 
     // Door
     ctx.fillStyle = '#555';
     ctx.beginPath();
-    ctx.roundRect(42 * scale, -14 * scale, 10 * scale, 26 * scale, 2 * scale);
+    ctx.roundRect(42 * s, -14 * s, 10 * s, 26 * s, 2 * s);
     ctx.fill();
 
     // Headlights
     ctx.fillStyle = '#FFFF88';
     ctx.beginPath();
-    ctx.arc(52 * scale, 8 * scale, 4 * scale, 0, Math.PI * 2);
+    ctx.arc(52 * s, 8 * s, 4 * s, 0, Math.PI * 2);
     ctx.fill();
 
     // Taillights
     ctx.fillStyle = '#FF4444';
     ctx.beginPath();
-    ctx.arc(-52 * scale, 8 * scale, 4 * scale, 0, Math.PI * 2);
+    ctx.arc(-52 * s, 8 * s, 4 * s, 0, Math.PI * 2);
     ctx.fill();
 
     // Wheels (4 for bus)
-    this.drawWheel(-35 * scale, 14 * scale, 10 * scale, wheelRotation);
-    this.drawWheel(-15 * scale, 14 * scale, 10 * scale, wheelRotation);
-    this.drawWheel(15 * scale, 14 * scale, 10 * scale, wheelRotation);
-    this.drawWheel(35 * scale, 14 * scale, 10 * scale, wheelRotation);
+    this.drawWheel(-35 * s, 14 * s, 10 * s, wheelRotation);
+    this.drawWheel(-15 * s, 14 * s, 10 * s, wheelRotation);
+    this.drawWheel(15 * s, 14 * s, 10 * s, wheelRotation);
+    this.drawWheel(35 * s, 14 * s, 10 * s, wheelRotation);
 
     ctx.restore();
   },
 
   drawFireTruck(vehicle) {
     const ctx = this.ctx;
-    const { x, y, scale, wheelRotation, rotation } = vehicle;
+    const { x, y, wheelRotation, rotation } = vehicle;
+    const s = vehicle.scale * this.baseScale; // Combined scale factor
 
     ctx.save();
     ctx.translate(x, y);
@@ -388,59 +400,60 @@ const Cars1Screensaver = {
     // Main body - bright red
     ctx.fillStyle = '#FF2222';
     ctx.beginPath();
-    ctx.roundRect(-45 * scale, -8 * scale, 90 * scale, 25 * scale, 4 * scale);
+    ctx.roundRect(-45 * s, -8 * s, 90 * s, 25 * s, 4 * s);
     ctx.fill();
     ctx.strokeStyle = '#222';
-    ctx.lineWidth = 2 * scale;
+    ctx.lineWidth = 2 * s;
     ctx.stroke();
 
     // Cab
     ctx.fillStyle = '#FF2222';
     ctx.beginPath();
-    ctx.roundRect(25 * scale, -22 * scale, 25 * scale, 35 * scale, 4 * scale);
+    ctx.roundRect(25 * s, -22 * s, 25 * s, 35 * s, 4 * s);
     ctx.fill();
     ctx.stroke();
 
     // Cab window
     ctx.fillStyle = '#87CEEB';
     ctx.beginPath();
-    ctx.roundRect(28 * scale, -18 * scale, 18 * scale, 12 * scale, 2 * scale);
+    ctx.roundRect(28 * s, -18 * s, 18 * s, 12 * s, 2 * s);
     ctx.fill();
 
     // Ladder (silver bars)
     ctx.fillStyle = '#CCC';
-    ctx.fillRect(-40 * scale, -12 * scale, 60 * scale, 4 * scale);
-    ctx.fillRect(-40 * scale, -6 * scale, 60 * scale, 4 * scale);
+    ctx.fillRect(-40 * s, -12 * s, 60 * s, 4 * s);
+    ctx.fillRect(-40 * s, -6 * s, 60 * s, 4 * s);
     // Ladder rungs
     ctx.fillStyle = '#AAA';
     for (let i = 0; i < 6; i++) {
-      ctx.fillRect((-35 + i * 12) * scale, -12 * scale, 3 * scale, 10 * scale);
+      ctx.fillRect((-35 + i * 12) * s, -12 * s, 3 * s, 10 * s);
     }
 
     // Emergency light on top
     ctx.fillStyle = this.lightsOn ? '#FF0000' : '#880000';
     ctx.beginPath();
-    ctx.arc(35 * scale, -26 * scale, 6 * scale, 0, Math.PI * 2);
+    ctx.arc(35 * s, -26 * s, 6 * s, 0, Math.PI * 2);
     ctx.fill();
 
     // Light glow when on
     if (this.lightsOn) {
       ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
       ctx.beginPath();
-      ctx.arc(35 * scale, -26 * scale, 12 * scale, 0, Math.PI * 2);
+      ctx.arc(35 * s, -26 * s, 12 * s, 0, Math.PI * 2);
       ctx.fill();
     }
 
     // Wheels
-    this.drawWheel(-32 * scale, 14 * scale, 10 * scale, wheelRotation);
-    this.drawWheel(32 * scale, 14 * scale, 10 * scale, wheelRotation);
+    this.drawWheel(-32 * s, 14 * s, 10 * s, wheelRotation);
+    this.drawWheel(32 * s, 14 * s, 10 * s, wheelRotation);
 
     ctx.restore();
   },
 
   drawPoliceCar(vehicle) {
     const ctx = this.ctx;
-    const { x, y, scale, wheelRotation, rotation } = vehicle;
+    const { x, y, wheelRotation, rotation } = vehicle;
+    const s = vehicle.scale * this.baseScale; // Combined scale factor
 
     ctx.save();
     ctx.translate(x, y);
@@ -449,69 +462,69 @@ const Cars1Screensaver = {
     // Car body - black and white
     ctx.fillStyle = '#1a1a1a';
     ctx.beginPath();
-    ctx.roundRect(-30 * scale, -8 * scale, 60 * scale, 24 * scale, 4 * scale);
+    ctx.roundRect(-30 * s, -8 * s, 60 * s, 24 * s, 4 * s);
     ctx.fill();
 
     // White front
     ctx.fillStyle = '#FFFFFF';
     ctx.beginPath();
-    ctx.roundRect(5 * scale, -8 * scale, 25 * scale, 24 * scale, 4 * scale);
+    ctx.roundRect(5 * s, -8 * s, 25 * s, 24 * s, 4 * s);
     ctx.fill();
 
     // Cabin
     ctx.fillStyle = '#1a1a1a';
     ctx.beginPath();
-    ctx.roundRect(-15 * scale, -20 * scale, 35 * scale, 14 * scale, 3 * scale);
+    ctx.roundRect(-15 * s, -20 * s, 35 * s, 14 * s, 3 * s);
     ctx.fill();
 
     // Windows
     ctx.fillStyle = '#87CEEB';
     ctx.beginPath();
-    ctx.roundRect(-12 * scale, -18 * scale, 14 * scale, 10 * scale, 2 * scale);
+    ctx.roundRect(-12 * s, -18 * s, 14 * s, 10 * s, 2 * s);
     ctx.fill();
     ctx.beginPath();
-    ctx.roundRect(5 * scale, -18 * scale, 12 * scale, 10 * scale, 2 * scale);
+    ctx.roundRect(5 * s, -18 * s, 12 * s, 10 * s, 2 * s);
     ctx.fill();
 
     // Light bar
     ctx.fillStyle = '#444';
     ctx.beginPath();
-    ctx.roundRect(-8 * scale, -26 * scale, 20 * scale, 6 * scale, 2 * scale);
+    ctx.roundRect(-8 * s, -26 * s, 20 * s, 6 * s, 2 * s);
     ctx.fill();
 
     // Red and blue lights
     ctx.fillStyle = this.lightsOn ? '#FF0000' : '#880000';
     ctx.beginPath();
-    ctx.arc(-3 * scale, -23 * scale, 4 * scale, 0, Math.PI * 2);
+    ctx.arc(-3 * s, -23 * s, 4 * s, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.fillStyle = this.lightsOn ? '#0066FF' : '#003388';
     ctx.beginPath();
-    ctx.arc(7 * scale, -23 * scale, 4 * scale, 0, Math.PI * 2);
+    ctx.arc(7 * s, -23 * s, 4 * s, 0, Math.PI * 2);
     ctx.fill();
 
     // Light glow when on
     if (this.lightsOn) {
       ctx.fillStyle = 'rgba(255, 0, 0, 0.2)';
       ctx.beginPath();
-      ctx.arc(-3 * scale, -23 * scale, 10 * scale, 0, Math.PI * 2);
+      ctx.arc(-3 * s, -23 * s, 10 * s, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = 'rgba(0, 100, 255, 0.2)';
       ctx.beginPath();
-      ctx.arc(7 * scale, -23 * scale, 10 * scale, 0, Math.PI * 2);
+      ctx.arc(7 * s, -23 * s, 10 * s, 0, Math.PI * 2);
       ctx.fill();
     }
 
     // Outline
     ctx.strokeStyle = '#222';
-    ctx.lineWidth = 2 * scale;
+    ctx.lineWidth = 2 * s;
     ctx.beginPath();
-    ctx.roundRect(-30 * scale, -8 * scale, 60 * scale, 24 * scale, 4 * scale);
+    ctx.roundRect(-30 * s, -8 * s, 60 * s, 24 * s, 4 * s);
     ctx.stroke();
 
     // Wheels
-    this.drawWheel(-18 * scale, 12 * scale, 10 * scale, wheelRotation);
-    this.drawWheel(18 * scale, 12 * scale, 10 * scale, wheelRotation);
+    this.drawWheel(-18 * s, 12 * s, 10 * s, wheelRotation);
+    this.drawWheel(18 * s, 12 * s, 10 * s, wheelRotation);
 
     ctx.restore();
   },

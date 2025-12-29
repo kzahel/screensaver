@@ -21,6 +21,9 @@ const Cars4Screensaver = {
   highwayHeight: 0,
   grassBottomY: 0,
 
+  // Resolution-independent scale factor (calculated in resize)
+  baseScale: 1,
+
   // Configuration
   carDensity: 'medium',
   aircraftFrequency: 'occasional',
@@ -111,6 +114,8 @@ const Cars4Screensaver = {
     this.highwayY = h * 0.80;
     this.highwayHeight = h * 0.15;
     this.grassBottomY = this.highwayY + this.highwayHeight;
+    // Calculate resolution-independent scale factor (800px is reference size)
+    this.baseScale = Math.min(this.canvas.width, this.canvas.height) / 800;
   },
 
   // ============ CLOUDS ============
@@ -138,11 +143,12 @@ const Cars4Screensaver = {
   generateCloudPuffs() {
     const puffs = [];
     const count = 3 + Math.floor(Math.random() * 3);
+    const s = this.baseScale || 1;
     for (let i = 0; i < count; i++) {
       puffs.push({
-        offsetX: (i - count / 2) * 25 + Math.random() * 10,
-        offsetY: Math.random() * 15 - 7,
-        radius: 20 + Math.random() * 15
+        offsetX: ((i - count / 2) * 25 + Math.random() * 10) * s,
+        offsetY: (Math.random() * 15 - 7) * s,
+        radius: (20 + Math.random() * 15) * s
       });
     }
     return puffs;
@@ -223,12 +229,15 @@ const Cars4Screensaver = {
   },
 
   getVehicleWidth(type) {
-    switch (type) {
-      case 'bus': return 100;
-      case 'truck': return 70;
-      case 'suv': return 60;
-      default: return 55;
-    }
+    const base = (() => {
+      switch (type) {
+        case 'bus': return 100;
+        case 'truck': return 70;
+        case 'suv': return 60;
+        default: return 55;
+      }
+    })();
+    return base * this.baseScale;
   },
 
   updateVehicle(vehicle, delta) {
@@ -258,7 +267,8 @@ const Cars4Screensaver = {
 
   drawSedan(vehicle) {
     const ctx = this.ctx;
-    const { x, y, scale, color, wheelRotation, facingLeft } = vehicle;
+    const { x, y, color, wheelRotation, facingLeft } = vehicle;
+    const s = vehicle.scale * this.baseScale; // Combined scale factor
 
     ctx.save();
     ctx.translate(x, y);
@@ -267,42 +277,43 @@ const Cars4Screensaver = {
     // Body
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.roundRect(-25 * scale, -6 * scale, 50 * scale, 18 * scale, 4 * scale);
+    ctx.roundRect(-25 * s, -6 * s, 50 * s, 18 * s, 4 * s);
     ctx.fill();
 
     // Cabin
     ctx.beginPath();
-    ctx.roundRect(-12 * scale, -16 * scale, 28 * scale, 12 * scale, 3 * scale);
+    ctx.roundRect(-12 * s, -16 * s, 28 * s, 12 * s, 3 * s);
     ctx.fill();
 
     // Windows
     ctx.fillStyle = '#87CEEB';
     ctx.beginPath();
-    ctx.roundRect(-9 * scale, -14 * scale, 11 * scale, 8 * scale, 2 * scale);
+    ctx.roundRect(-9 * s, -14 * s, 11 * s, 8 * s, 2 * s);
     ctx.fill();
     ctx.beginPath();
-    ctx.roundRect(4 * scale, -14 * scale, 10 * scale, 8 * scale, 2 * scale);
+    ctx.roundRect(4 * s, -14 * s, 10 * s, 8 * s, 2 * s);
     ctx.fill();
 
     // Outline
     ctx.strokeStyle = '#222';
-    ctx.lineWidth = 2 * scale;
+    ctx.lineWidth = 2 * s;
     ctx.beginPath();
-    ctx.roundRect(-25 * scale, -6 * scale, 50 * scale, 18 * scale, 4 * scale);
+    ctx.roundRect(-25 * s, -6 * s, 50 * s, 18 * s, 4 * s);
     ctx.stroke();
 
     ctx.restore();
 
     // Wheels
-    const wheelY = y + 8 * scale;
-    const wheelRadius = 7 * scale;
-    this.drawWheel(x - 14 * scale, wheelY, wheelRadius, wheelRotation);
-    this.drawWheel(x + 14 * scale, wheelY, wheelRadius, wheelRotation);
+    const wheelY = y + 8 * s;
+    const wheelRadius = 7 * s;
+    this.drawWheel(x - 14 * s, wheelY, wheelRadius, wheelRotation);
+    this.drawWheel(x + 14 * s, wheelY, wheelRadius, wheelRotation);
   },
 
   drawSUV(vehicle) {
     const ctx = this.ctx;
-    const { x, y, scale, color, wheelRotation, facingLeft } = vehicle;
+    const { x, y, color, wheelRotation, facingLeft } = vehicle;
+    const s = vehicle.scale * this.baseScale; // Combined scale factor
 
     ctx.save();
     ctx.translate(x, y);
@@ -311,37 +322,38 @@ const Cars4Screensaver = {
     // Body (taller)
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.roundRect(-26 * scale, -14 * scale, 52 * scale, 26 * scale, 4 * scale);
+    ctx.roundRect(-26 * s, -14 * s, 52 * s, 26 * s, 4 * s);
     ctx.fill();
 
     // Windows
     ctx.fillStyle = '#87CEEB';
     ctx.beginPath();
-    ctx.roundRect(-20 * scale, -11 * scale, 16 * scale, 10 * scale, 2 * scale);
+    ctx.roundRect(-20 * s, -11 * s, 16 * s, 10 * s, 2 * s);
     ctx.fill();
     ctx.beginPath();
-    ctx.roundRect(0 * scale, -11 * scale, 16 * scale, 10 * scale, 2 * scale);
+    ctx.roundRect(0 * s, -11 * s, 16 * s, 10 * s, 2 * s);
     ctx.fill();
 
     // Outline
     ctx.strokeStyle = '#222';
-    ctx.lineWidth = 2 * scale;
+    ctx.lineWidth = 2 * s;
     ctx.beginPath();
-    ctx.roundRect(-26 * scale, -14 * scale, 52 * scale, 26 * scale, 4 * scale);
+    ctx.roundRect(-26 * s, -14 * s, 52 * s, 26 * s, 4 * s);
     ctx.stroke();
 
     ctx.restore();
 
     // Bigger wheels
-    const wheelY = y + 9 * scale;
-    const wheelRadius = 9 * scale;
-    this.drawWheel(x - 16 * scale, wheelY, wheelRadius, wheelRotation);
-    this.drawWheel(x + 16 * scale, wheelY, wheelRadius, wheelRotation);
+    const wheelY = y + 9 * s;
+    const wheelRadius = 9 * s;
+    this.drawWheel(x - 16 * s, wheelY, wheelRadius, wheelRotation);
+    this.drawWheel(x + 16 * s, wheelY, wheelRadius, wheelRotation);
   },
 
   drawTruck(vehicle) {
     const ctx = this.ctx;
-    const { x, y, scale, color, wheelRotation, facingLeft } = vehicle;
+    const { x, y, color, wheelRotation, facingLeft } = vehicle;
+    const s = vehicle.scale * this.baseScale; // Combined scale factor
 
     ctx.save();
     ctx.translate(x, y);
@@ -350,37 +362,38 @@ const Cars4Screensaver = {
     // Truck bed
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.roundRect(-30 * scale, -4 * scale, 35 * scale, 16 * scale, 2 * scale);
+    ctx.roundRect(-30 * s, -4 * s, 35 * s, 16 * s, 2 * s);
     ctx.fill();
     ctx.strokeStyle = '#222';
-    ctx.lineWidth = 2 * scale;
+    ctx.lineWidth = 2 * s;
     ctx.stroke();
 
     // Cab
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.roundRect(5 * scale, -14 * scale, 24 * scale, 26 * scale, 4 * scale);
+    ctx.roundRect(5 * s, -14 * s, 24 * s, 26 * s, 4 * s);
     ctx.fill();
     ctx.stroke();
 
     // Window
     ctx.fillStyle = '#87CEEB';
     ctx.beginPath();
-    ctx.roundRect(9 * scale, -11 * scale, 16 * scale, 10 * scale, 2 * scale);
+    ctx.roundRect(9 * s, -11 * s, 16 * s, 10 * s, 2 * s);
     ctx.fill();
 
     ctx.restore();
 
     // Wheels
-    const wheelY = y + 9 * scale;
-    const wheelRadius = 8 * scale;
-    this.drawWheel(x - 18 * scale, wheelY, wheelRadius, wheelRotation);
-    this.drawWheel(x + 18 * scale, wheelY, wheelRadius, wheelRotation);
+    const wheelY = y + 9 * s;
+    const wheelRadius = 8 * s;
+    this.drawWheel(x - 18 * s, wheelY, wheelRadius, wheelRotation);
+    this.drawWheel(x + 18 * s, wheelY, wheelRadius, wheelRotation);
   },
 
   drawBus(vehicle) {
     const ctx = this.ctx;
-    const { x, y, scale, wheelRotation, facingLeft } = vehicle;
+    const { x, y, wheelRotation, facingLeft } = vehicle;
+    const s = vehicle.scale * this.baseScale; // Combined scale factor
 
     ctx.save();
     ctx.translate(x, y);
@@ -389,27 +402,27 @@ const Cars4Screensaver = {
     // Yellow school bus body
     ctx.fillStyle = '#FFD700';
     ctx.beginPath();
-    ctx.roundRect(-45 * scale, -14 * scale, 90 * scale, 28 * scale, 4 * scale);
+    ctx.roundRect(-45 * s, -14 * s, 90 * s, 28 * s, 4 * s);
     ctx.fill();
     ctx.strokeStyle = '#222';
-    ctx.lineWidth = 2 * scale;
+    ctx.lineWidth = 2 * s;
     ctx.stroke();
 
     // Windows
     ctx.fillStyle = '#87CEEB';
     for (let i = 0; i < 4; i++) {
       ctx.beginPath();
-      ctx.roundRect((-35 + i * 18) * scale, -10 * scale, 12 * scale, 10 * scale, 2 * scale);
+      ctx.roundRect((-35 + i * 18) * s, -10 * s, 12 * s, 10 * s, 2 * s);
       ctx.fill();
     }
 
     ctx.restore();
 
     // Wheels
-    const wheelY = y + 10 * scale;
-    const wheelRadius = 8 * scale;
-    this.drawWheel(x - 28 * scale, wheelY, wheelRadius, wheelRotation);
-    this.drawWheel(x + 28 * scale, wheelY, wheelRadius, wheelRotation);
+    const wheelY = y + 10 * s;
+    const wheelRadius = 8 * s;
+    this.drawWheel(x - 28 * s, wheelY, wheelRadius, wheelRotation);
+    this.drawWheel(x + 28 * s, wheelY, wheelRadius, wheelRotation);
   },
 
   drawVehicle(vehicle) {
@@ -498,7 +511,8 @@ const Cars4Screensaver = {
 
   drawPropPlane(craft) {
     const ctx = this.ctx;
-    const { x, y, scale, color, facingLeft } = craft;
+    const { x, y, color, facingLeft } = craft;
+    const s = craft.scale * this.baseScale; // Combined scale factor
 
     ctx.save();
     ctx.translate(x, y);
@@ -507,51 +521,51 @@ const Cars4Screensaver = {
     // Fuselage
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.ellipse(0, 0, 35 * scale, 10 * scale, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, 35 * s, 10 * s, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = '#222';
-    ctx.lineWidth = 2 * scale;
+    ctx.lineWidth = 2 * s;
     ctx.stroke();
 
     // Wings
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.roundRect(-10 * scale, -30 * scale, 20 * scale, 60 * scale, 3 * scale);
+    ctx.roundRect(-10 * s, -30 * s, 20 * s, 60 * s, 3 * s);
     ctx.fill();
     ctx.stroke();
 
     // Tail
     ctx.beginPath();
-    ctx.moveTo(-32 * scale, 0);
-    ctx.lineTo(-40 * scale, -15 * scale);
-    ctx.lineTo(-35 * scale, 0);
+    ctx.moveTo(-32 * s, 0);
+    ctx.lineTo(-40 * s, -15 * s);
+    ctx.lineTo(-35 * s, 0);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
 
     // Horizontal tail
     ctx.beginPath();
-    ctx.roundRect(-38 * scale, -4 * scale, 12 * scale, 8 * scale, 2 * scale);
+    ctx.roundRect(-38 * s, -4 * s, 12 * s, 8 * s, 2 * s);
     ctx.fill();
 
     // Cockpit
     ctx.fillStyle = '#87CEEB';
     ctx.beginPath();
-    ctx.ellipse(15 * scale, -2 * scale, 10 * scale, 6 * scale, 0, 0, Math.PI * 2);
+    ctx.ellipse(15 * s, -2 * s, 10 * s, 6 * s, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // Propeller (animated)
     ctx.fillStyle = '#444';
     ctx.save();
-    ctx.translate(36 * scale, 0);
+    ctx.translate(36 * s, 0);
     ctx.rotate(this.propellerRotation);
-    ctx.fillRect(-2 * scale, -18 * scale, 4 * scale, 36 * scale);
+    ctx.fillRect(-2 * s, -18 * s, 4 * s, 36 * s);
     ctx.restore();
 
     // Nose cone
     ctx.fillStyle = '#FFD700';
     ctx.beginPath();
-    ctx.arc(36 * scale, 0, 5 * scale, 0, Math.PI * 2);
+    ctx.arc(36 * s, 0, 5 * s, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.restore();
@@ -559,7 +573,8 @@ const Cars4Screensaver = {
 
   drawJet(craft) {
     const ctx = this.ctx;
-    const { x, y, scale, color, facingLeft } = craft;
+    const { x, y, color, facingLeft } = craft;
+    const s = craft.scale * this.baseScale; // Combined scale factor
 
     ctx.save();
     ctx.translate(x, y);
@@ -568,38 +583,38 @@ const Cars4Screensaver = {
     // Fuselage
     ctx.fillStyle = '#FFFFFF';
     ctx.beginPath();
-    ctx.moveTo(45 * scale, 0);
-    ctx.lineTo(30 * scale, -8 * scale);
-    ctx.lineTo(-40 * scale, -8 * scale);
-    ctx.lineTo(-50 * scale, 0);
-    ctx.lineTo(-40 * scale, 8 * scale);
-    ctx.lineTo(30 * scale, 8 * scale);
+    ctx.moveTo(45 * s, 0);
+    ctx.lineTo(30 * s, -8 * s);
+    ctx.lineTo(-40 * s, -8 * s);
+    ctx.lineTo(-50 * s, 0);
+    ctx.lineTo(-40 * s, 8 * s);
+    ctx.lineTo(30 * s, 8 * s);
     ctx.closePath();
     ctx.fill();
     ctx.strokeStyle = '#222';
-    ctx.lineWidth = 2 * scale;
+    ctx.lineWidth = 2 * s;
     ctx.stroke();
 
     // Color stripe
     ctx.fillStyle = color;
-    ctx.fillRect(-40 * scale, -3 * scale, 70 * scale, 6 * scale);
+    ctx.fillRect(-40 * s, -3 * s, 70 * s, 6 * s);
 
     // Wings
     ctx.fillStyle = '#DDD';
     ctx.beginPath();
-    ctx.moveTo(-5 * scale, -8 * scale);
-    ctx.lineTo(-20 * scale, -35 * scale);
-    ctx.lineTo(10 * scale, -35 * scale);
-    ctx.lineTo(15 * scale, -8 * scale);
+    ctx.moveTo(-5 * s, -8 * s);
+    ctx.lineTo(-20 * s, -35 * s);
+    ctx.lineTo(10 * s, -35 * s);
+    ctx.lineTo(15 * s, -8 * s);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.moveTo(-5 * scale, 8 * scale);
-    ctx.lineTo(-20 * scale, 35 * scale);
-    ctx.lineTo(10 * scale, 35 * scale);
-    ctx.lineTo(15 * scale, 8 * scale);
+    ctx.moveTo(-5 * s, 8 * s);
+    ctx.lineTo(-20 * s, 35 * s);
+    ctx.lineTo(10 * s, 35 * s);
+    ctx.lineTo(15 * s, 8 * s);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
@@ -607,10 +622,10 @@ const Cars4Screensaver = {
     // Tail fin
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.moveTo(-35 * scale, -8 * scale);
-    ctx.lineTo(-45 * scale, -25 * scale);
-    ctx.lineTo(-30 * scale, -25 * scale);
-    ctx.lineTo(-25 * scale, -8 * scale);
+    ctx.moveTo(-35 * s, -8 * s);
+    ctx.lineTo(-45 * s, -25 * s);
+    ctx.lineTo(-30 * s, -25 * s);
+    ctx.lineTo(-25 * s, -8 * s);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
@@ -619,14 +634,14 @@ const Cars4Screensaver = {
     ctx.fillStyle = '#87CEEB';
     for (let i = 0; i < 5; i++) {
       ctx.beginPath();
-      ctx.arc((20 - i * 12) * scale, -4 * scale, 3 * scale, 0, Math.PI * 2);
+      ctx.arc((20 - i * 12) * s, -4 * s, 3 * s, 0, Math.PI * 2);
       ctx.fill();
     }
 
     // Cockpit
     ctx.fillStyle = '#4A90D9';
     ctx.beginPath();
-    ctx.ellipse(38 * scale, 0, 8 * scale, 5 * scale, 0, 0, Math.PI * 2);
+    ctx.ellipse(38 * s, 0, 8 * s, 5 * s, 0, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.restore();
@@ -634,7 +649,8 @@ const Cars4Screensaver = {
 
   drawBiplane(craft) {
     const ctx = this.ctx;
-    const { x, y, scale, color, facingLeft } = craft;
+    const { x, y, color, facingLeft } = craft;
+    const s = craft.scale * this.baseScale; // Combined scale factor
 
     ctx.save();
     ctx.translate(x, y);
@@ -643,62 +659,62 @@ const Cars4Screensaver = {
     // Fuselage
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.roundRect(-30 * scale, -6 * scale, 55 * scale, 12 * scale, 3 * scale);
+    ctx.roundRect(-30 * s, -6 * s, 55 * s, 12 * s, 3 * s);
     ctx.fill();
     ctx.strokeStyle = '#222';
-    ctx.lineWidth = 2 * scale;
+    ctx.lineWidth = 2 * s;
     ctx.stroke();
 
     // Upper wing
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.roundRect(-20 * scale, -22 * scale, 40 * scale, 10 * scale, 2 * scale);
+    ctx.roundRect(-20 * s, -22 * s, 40 * s, 10 * s, 2 * s);
     ctx.fill();
     ctx.stroke();
 
     // Lower wing
     ctx.beginPath();
-    ctx.roundRect(-20 * scale, 8 * scale, 40 * scale, 10 * scale, 2 * scale);
+    ctx.roundRect(-20 * s, 8 * s, 40 * s, 10 * s, 2 * s);
     ctx.fill();
     ctx.stroke();
 
     // Wing struts
     ctx.strokeStyle = '#8B4513';
-    ctx.lineWidth = 3 * scale;
+    ctx.lineWidth = 3 * s;
     ctx.beginPath();
-    ctx.moveTo(-12 * scale, -12 * scale);
-    ctx.lineTo(-12 * scale, 8 * scale);
-    ctx.moveTo(12 * scale, -12 * scale);
-    ctx.lineTo(12 * scale, 8 * scale);
+    ctx.moveTo(-12 * s, -12 * s);
+    ctx.lineTo(-12 * s, 8 * s);
+    ctx.moveTo(12 * s, -12 * s);
+    ctx.lineTo(12 * s, 8 * s);
     ctx.stroke();
 
     // Tail
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.moveTo(-28 * scale, 0);
-    ctx.lineTo(-38 * scale, -12 * scale);
-    ctx.lineTo(-32 * scale, 0);
+    ctx.moveTo(-28 * s, 0);
+    ctx.lineTo(-38 * s, -12 * s);
+    ctx.lineTo(-32 * s, 0);
     ctx.closePath();
     ctx.fill();
 
     // Propeller
     ctx.fillStyle = '#8B4513';
     ctx.save();
-    ctx.translate(26 * scale, 0);
+    ctx.translate(26 * s, 0);
     ctx.rotate(this.propellerRotation);
-    ctx.fillRect(-2 * scale, -15 * scale, 4 * scale, 30 * scale);
+    ctx.fillRect(-2 * s, -15 * s, 4 * s, 30 * s);
     ctx.restore();
 
     // Nose
     ctx.fillStyle = '#FFD700';
     ctx.beginPath();
-    ctx.arc(26 * scale, 0, 4 * scale, 0, Math.PI * 2);
+    ctx.arc(26 * s, 0, 4 * s, 0, Math.PI * 2);
     ctx.fill();
 
     // Cockpit
     ctx.fillStyle = '#87CEEB';
     ctx.beginPath();
-    ctx.roundRect(0 * scale, -10 * scale, 12 * scale, 8 * scale, 2 * scale);
+    ctx.roundRect(0 * s, -10 * s, 12 * s, 8 * s, 2 * s);
     ctx.fill();
 
     ctx.restore();
@@ -706,7 +722,8 @@ const Cars4Screensaver = {
 
   drawHelicopter(craft) {
     const ctx = this.ctx;
-    const { x, y, scale, color, facingLeft } = craft;
+    const { x, y, color, facingLeft } = craft;
+    const s = craft.scale * this.baseScale; // Combined scale factor
 
     ctx.save();
     ctx.translate(x, y);
@@ -715,28 +732,28 @@ const Cars4Screensaver = {
     // Main body
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.ellipse(0, 0, 30 * scale, 14 * scale, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, 30 * s, 14 * s, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = '#222';
-    ctx.lineWidth = 2 * scale;
+    ctx.lineWidth = 2 * s;
     ctx.stroke();
 
     // Tail boom
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.moveTo(-25 * scale, -4 * scale);
-    ctx.lineTo(-55 * scale, -4 * scale);
-    ctx.lineTo(-55 * scale, 4 * scale);
-    ctx.lineTo(-25 * scale, 4 * scale);
+    ctx.moveTo(-25 * s, -4 * s);
+    ctx.lineTo(-55 * s, -4 * s);
+    ctx.lineTo(-55 * s, 4 * s);
+    ctx.lineTo(-25 * s, 4 * s);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
 
     // Tail fin
     ctx.beginPath();
-    ctx.moveTo(-52 * scale, -4 * scale);
-    ctx.lineTo(-58 * scale, -18 * scale);
-    ctx.lineTo(-48 * scale, -4 * scale);
+    ctx.moveTo(-52 * s, -4 * s);
+    ctx.lineTo(-58 * s, -18 * s);
+    ctx.lineTo(-48 * s, -4 * s);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
@@ -744,40 +761,40 @@ const Cars4Screensaver = {
     // Tail rotor
     ctx.fillStyle = '#666';
     ctx.save();
-    ctx.translate(-55 * scale, -12 * scale);
+    ctx.translate(-55 * s, -12 * s);
     ctx.rotate(this.rotorRotation * 1.5);
-    ctx.fillRect(-8 * scale, -2 * scale, 16 * scale, 4 * scale);
+    ctx.fillRect(-8 * s, -2 * s, 16 * s, 4 * s);
     ctx.restore();
 
     // Cockpit window
     ctx.fillStyle = '#87CEEB';
     ctx.beginPath();
-    ctx.ellipse(15 * scale, -2 * scale, 14 * scale, 10 * scale, 0, 0, Math.PI * 2);
+    ctx.ellipse(15 * s, -2 * s, 14 * s, 10 * s, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = '#222';
-    ctx.lineWidth = 1 * scale;
+    ctx.lineWidth = 1 * s;
     ctx.stroke();
 
     // Landing skids
     ctx.strokeStyle = '#444';
-    ctx.lineWidth = 3 * scale;
+    ctx.lineWidth = 3 * s;
     ctx.beginPath();
-    ctx.moveTo(-20 * scale, 14 * scale);
-    ctx.lineTo(-20 * scale, 22 * scale);
-    ctx.lineTo(20 * scale, 22 * scale);
-    ctx.lineTo(20 * scale, 14 * scale);
+    ctx.moveTo(-20 * s, 14 * s);
+    ctx.lineTo(-20 * s, 22 * s);
+    ctx.lineTo(20 * s, 22 * s);
+    ctx.lineTo(20 * s, 14 * s);
     ctx.stroke();
 
     // Main rotor mast
     ctx.fillStyle = '#444';
-    ctx.fillRect(-3 * scale, -14 * scale, 6 * scale, 8 * scale);
+    ctx.fillRect(-3 * s, -14 * s, 6 * s, 8 * s);
 
     // Main rotor (spinning)
     ctx.save();
-    ctx.translate(0, -18 * scale);
+    ctx.translate(0, -18 * s);
     ctx.rotate(this.rotorRotation);
     ctx.fillStyle = '#666';
-    ctx.fillRect(-45 * scale, -3 * scale, 90 * scale, 6 * scale);
+    ctx.fillRect(-45 * s, -3 * s, 90 * s, 6 * s);
     ctx.restore();
 
     ctx.restore();
@@ -809,9 +826,10 @@ const Cars4Screensaver = {
 
   drawSun() {
     const ctx = this.ctx;
-    const sunX = this.canvas.width - 100;
-    const sunY = 80;
-    const sunRadius = 40;
+    const s = this.baseScale;
+    const sunX = this.canvas.width - 100 * s;
+    const sunY = 80 * s;
+    const sunRadius = 40 * s;
 
     // Sun glow
     const glowGradient = ctx.createRadialGradient(sunX, sunY, sunRadius * 0.5, sunX, sunY, sunRadius * 2);
@@ -824,11 +842,11 @@ const Cars4Screensaver = {
 
     // Sun rays
     ctx.strokeStyle = '#FFD700';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 3 * s;
     for (let i = 0; i < 12; i++) {
       const angle = (Math.PI * 2 / 12) * i;
-      const innerR = sunRadius + 5;
-      const outerR = sunRadius + 20;
+      const innerR = sunRadius + 5 * s;
+      const outerR = sunRadius + 20 * s;
       ctx.beginPath();
       ctx.moveTo(sunX + Math.cos(angle) * innerR, sunY + Math.sin(angle) * innerR);
       ctx.lineTo(sunX + Math.cos(angle) * outerR, sunY + Math.sin(angle) * outerR);
@@ -844,7 +862,7 @@ const Cars4Screensaver = {
     // Inner highlight
     ctx.fillStyle = '#FFEB3B';
     ctx.beginPath();
-    ctx.arc(sunX - 10, sunY - 10, sunRadius * 0.4, 0, Math.PI * 2);
+    ctx.arc(sunX - 10 * s, sunY - 10 * s, sunRadius * 0.4, 0, Math.PI * 2);
     ctx.fill();
   },
 

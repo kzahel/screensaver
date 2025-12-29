@@ -1,4 +1,4 @@
-const MOUSE_MOVE_THRESHOLD = 500;
+const MOUSE_MOVE_THRESHOLD = 250;
 let mouseMoveStartTime = null;
 let resetTimer = null;
 let activeScreensaver = null;

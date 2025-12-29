@@ -20,6 +20,9 @@ const Cars3Screensaver = {
   trackRadiusY: 0,
   trackWidth: 60,
 
+  // Resolution-independent scale factor (calculated in resize)
+  baseScale: 1,
+
   // Configuration
   carCount: 5,
   speedSetting: 'racing',
@@ -107,6 +110,8 @@ const Cars3Screensaver = {
     this.trackRadiusX = this.canvas.width * 0.4;
     this.trackRadiusY = this.canvas.height * 0.35;
     this.trackWidth = Math.min(this.canvas.width, this.canvas.height) * 0.08;
+    // Calculate resolution-independent scale factor (800px is reference size)
+    this.baseScale = Math.min(this.canvas.width, this.canvas.height) / 800;
   },
 
   getBaseSpeed() {
@@ -175,15 +180,16 @@ const Cars3Screensaver = {
 
   spawnConfetti(car) {
     const pos = this.getCarPosition(car.angle);
+    const s = this.baseScale;
 
     for (let i = 0; i < 20; i++) {
       this.confetti.push({
         x: pos.x,
         y: pos.y,
-        vx: (Math.random() - 0.5) * 8,
-        vy: (Math.random() - 0.5) * 8 - 3,
+        vx: (Math.random() - 0.5) * 8 * s,
+        vy: (Math.random() - 0.5) * 8 * s - 3 * s,
         color: this.CAR_COLORS[Math.floor(Math.random() * this.CAR_COLORS.length)],
-        size: 3 + Math.random() * 4,
+        size: (3 + Math.random() * 4) * s,
         life: 1,
         decay: 0.02 + Math.random() * 0.01,
         rotation: Math.random() * Math.PI * 2,
@@ -193,11 +199,12 @@ const Cars3Screensaver = {
   },
 
   updateConfetti(delta) {
+    const s = this.baseScale;
     for (let i = this.confetti.length - 1; i >= 0; i--) {
       const c = this.confetti[i];
       c.x += c.vx * delta;
       c.y += c.vy * delta;
-      c.vy += 0.2 * delta; // Gravity
+      c.vy += 0.2 * s * delta; // Gravity (scaled)
       c.rotation += c.rotationSpeed * delta;
       c.life -= c.decay * delta;
 
@@ -286,11 +293,12 @@ const Cars3Screensaver = {
 
   drawFinishLine() {
     const ctx = this.ctx;
+    const s = this.baseScale;
     const finishX = this.trackCenterX + this.trackRadiusX;
     const finishY = this.trackCenterY;
     const lineWidth = this.trackWidth;
-    const lineHeight = 20;
-    const squareSize = 10;
+    const lineHeight = 20 * s;
+    const squareSize = 10 * s;
 
     ctx.save();
     ctx.translate(finishX, finishY);
@@ -315,13 +323,14 @@ const Cars3Screensaver = {
   drawTrail(car) {
     const ctx = this.ctx;
     const trail = car.trail;
+    const s = this.baseScale; // Scale factor for resolution independence
 
     if (trail.length < 2) return;
 
     for (let i = 1; i < trail.length; i++) {
       const t = trail[i];
       const alpha = (i / trail.length) * 0.7;
-      const width = (i / trail.length) * 8 + 2;
+      const width = ((i / trail.length) * 8 + 2) * s;
 
       ctx.strokeStyle = car.color.replace(')', `, ${alpha})`).replace('rgb', 'rgba').replace('#', '');
 
@@ -345,6 +354,7 @@ const Cars3Screensaver = {
   drawCar(car) {
     const ctx = this.ctx;
     const pos = this.getCarPosition(car.angle);
+    const s = this.baseScale; // Scale factor for resolution independence
 
     // Calculate car rotation (tangent to the ellipse)
     // Derivative of ellipse: dx/dθ = -a*sin(θ), dy/dθ = b*cos(θ)
@@ -356,38 +366,38 @@ const Cars3Screensaver = {
     ctx.translate(pos.x, pos.y);
     ctx.rotate(rotation);
 
-    const carLength = 24;
-    const carWidth = 14;
+    const carLength = 24 * s;
+    const carWidth = 14 * s;
 
     // Car body
     ctx.fillStyle = car.color;
     ctx.beginPath();
-    ctx.roundRect(-carLength / 2, -carWidth / 2, carLength, carWidth, 3);
+    ctx.roundRect(-carLength / 2, -carWidth / 2, carLength, carWidth, 3 * s);
     ctx.fill();
 
     // Darker outline
     ctx.strokeStyle = '#222';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2 * s;
     ctx.stroke();
 
     // Spoiler (back of car)
     ctx.fillStyle = '#222';
-    ctx.fillRect(-carLength / 2 - 2, -carWidth / 2 + 2, 4, carWidth - 4);
+    ctx.fillRect(-carLength / 2 - 2 * s, -carWidth / 2 + 2 * s, 4 * s, carWidth - 4 * s);
 
     // Windshield
     ctx.fillStyle = '#87CEEB';
     ctx.beginPath();
-    ctx.roundRect(2, -carWidth / 2 + 3, 8, carWidth - 6, 2);
+    ctx.roundRect(2 * s, -carWidth / 2 + 3 * s, 8 * s, carWidth - 6 * s, 2 * s);
     ctx.fill();
 
     // Racing number on roof
     ctx.fillStyle = '#FFF';
     ctx.beginPath();
-    ctx.arc(0, 0, 5, 0, Math.PI * 2);
+    ctx.arc(0, 0, 5 * s, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.fillStyle = '#000';
-    ctx.font = 'bold 7px Arial';
+    ctx.font = `bold ${Math.round(7 * s)}px Arial`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(car.number.toString(), 0, 0);
@@ -395,10 +405,10 @@ const Cars3Screensaver = {
     // Headlights
     ctx.fillStyle = '#FFFF88';
     ctx.beginPath();
-    ctx.arc(carLength / 2 - 2, -carWidth / 4, 2, 0, Math.PI * 2);
+    ctx.arc(carLength / 2 - 2 * s, -carWidth / 4, 2 * s, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(carLength / 2 - 2, carWidth / 4, 2, 0, Math.PI * 2);
+    ctx.arc(carLength / 2 - 2 * s, carWidth / 4, 2 * s, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.restore();
