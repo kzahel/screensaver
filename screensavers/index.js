@@ -6,7 +6,8 @@ const SCREENSAVER_MODULES = [
   'pipes',
   'starfield',
   'mystify',
-  'pyro'
+  'pyro',
+  'flying-toasters'
 ];
 
 async function loadAllScreensavers() {
