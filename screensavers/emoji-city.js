@@ -28,8 +28,13 @@ const EmojiCityScreensaver = {
   emojiDensity: 'normal',
   weatherEnabled: true,
   sceneOrder: 'sequential',
+  backgroundStyle: 'solid',
   targetFps: 60,
   maxFramerate: 0,
+
+  // Reference resolution for scaling (1080p)
+  REFERENCE_WIDTH: 1920,
+  REFERENCE_HEIGHT: 1080,
 
   // Emoji size scale
   SIZES: {
@@ -507,17 +512,18 @@ const EmojiCityScreensaver = {
     this.emojiDensity = options.emojiDensity || 'normal';
     this.weatherEnabled = options.weatherEnabled !== false;
     this.sceneOrder = options.sceneOrder || 'sequential';
+    this.backgroundStyle = options.backgroundStyle || 'solid';
     this.maxFramerate = options.maxFramerate || 0;
 
     // Preview mode support
     this.fixedWidth = options.width || null;
     this.fixedHeight = options.height || null;
 
-    this.resize();
-
-    // Create background canvas for caching
+    // Create background canvas for caching (must be before resize())
     this.backgroundCanvas = document.createElement('canvas');
     this.backgroundCtx = this.backgroundCanvas.getContext('2d');
+
+    this.resize();
 
     if (!this.fixedWidth) {
       window.addEventListener('resize', this.handleResize);
@@ -585,10 +591,16 @@ const EmojiCityScreensaver = {
   },
 
   createSprite(cfg, isDynamic) {
-    const size = this.SIZES[cfg.size] || this.SIZES.medium;
+    const baseSize = this.SIZES[cfg.size] || this.SIZES.medium;
 
-    // Scale size for preview
-    const scaledSize = this.fixedWidth && this.fixedWidth < 600 ? size * 0.6 : size;
+    // Scale size based on screen resolution relative to reference (1080p)
+    // Use the smaller dimension ratio to ensure emojis scale proportionally
+    const scaleX = this.canvas.width / this.REFERENCE_WIDTH;
+    const scaleY = this.canvas.height / this.REFERENCE_HEIGHT;
+    const resolutionScale = Math.min(scaleX, scaleY);
+
+    // For small preview windows, scale down; for larger screens, scale up
+    const scaledSize = baseSize * Math.max(0.5, resolutionScale);
 
     let x, y;
     if (cfg.spawnX !== undefined) {
@@ -657,27 +669,51 @@ const EmojiCityScreensaver = {
 
     if (!lines || lines.length === 0) return;
 
-    // Calculate character size to fit screen
+    // Calculate cell size to exactly fill the screen
     const maxLineLength = Math.max(...lines.map(l => l.length));
-    const charWidth = this.backgroundCanvas.width / maxLineLength;
-    const charHeight = this.backgroundCanvas.height / lines.length;
-    const fontSize = Math.min(charWidth * 1.5, charHeight * 1.2);
+    const cellWidth = this.backgroundCanvas.width / maxLineLength;
+    const cellHeight = this.backgroundCanvas.height / lines.length;
 
-    ctx.font = `${fontSize}px monospace`;
-    ctx.textBaseline = 'top';
+    if (this.backgroundStyle === 'ascii') {
+      // ASCII text rendering - draws actual characters
+      const fontSize = Math.max(cellHeight * 1.2, cellWidth * 1.5);
+      ctx.font = `${fontSize}px monospace`;
+      ctx.textBaseline = 'top';
 
-    // Render each character
-    for (let row = 0; row < lines.length; row++) {
-      const line = lines[row];
-      for (let col = 0; col < line.length; col++) {
-        const char = line[col];
-        if (char === ' ') continue;
+      for (let row = 0; row < lines.length; row++) {
+        const line = lines[row];
+        for (let col = 0; col < line.length; col++) {
+          const char = line[col];
+          if (char === ' ') continue;
 
-        const color = scene.charColors[char] || '#333';
-        if (color === 'transparent') continue;
+          const color = scene.charColors[char] || '#333';
+          if (color === 'transparent') continue;
 
-        ctx.fillStyle = color;
-        ctx.fillText(char, col * charWidth, row * charHeight);
+          ctx.fillStyle = color;
+          ctx.fillText(char, col * cellWidth, row * cellHeight);
+        }
+      }
+    } else {
+      // Solid color rendering - draws filled rectangles (better scaling)
+      for (let row = 0; row < lines.length; row++) {
+        const line = lines[row];
+        for (let col = 0; col < line.length; col++) {
+          const char = line[col];
+          if (char === ' ') continue;
+
+          const color = scene.charColors[char] || '#333';
+          if (color === 'transparent') continue;
+
+          ctx.fillStyle = color;
+          // Use fillRect for precise pixel-perfect coverage
+          // Add 1px overlap to prevent gaps from rounding errors
+          ctx.fillRect(
+            Math.floor(col * cellWidth),
+            Math.floor(row * cellHeight),
+            Math.ceil(cellWidth) + 1,
+            Math.ceil(cellHeight) + 1
+          );
+        }
       }
     }
   },
@@ -967,6 +1003,13 @@ if (typeof window !== 'undefined') {
           default: 'sequential',
           values: ['sequential', 'random'],
           labels: ['Sequential', 'Random']
+        },
+        backgroundStyle: {
+          type: 'select',
+          label: 'Background Style',
+          default: 'solid',
+          values: ['solid', 'ascii'],
+          labels: ['Solid Colors', 'ASCII Characters']
         }
       }
     });
