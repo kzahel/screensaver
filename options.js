@@ -11,6 +11,7 @@
   const powerModeEl = document.getElementById('power-mode');
   const dimLevelEl = document.getElementById('dim-level');
   const dimLevelValueEl = document.getElementById('dim-level-value');
+  const maxFramerateEl = document.getElementById('max-framerate');
   const testBtn = document.getElementById('test-btn');
 
   // Preview elements
@@ -40,6 +41,7 @@
   powerModeEl.value = settings.powerMode;
   dimLevelEl.value = settings.dimLevel;
   dimLevelValueEl.textContent = `${settings.dimLevel}%`;
+  maxFramerateEl.value = settings.maxFramerate;
 
   updateEnabledState();
   updateOptionsUI();
@@ -133,6 +135,7 @@
           canvas: previewCanvas,
           width: width,
           height: height,
+          maxFramerate: parseInt(maxFramerateEl.value) || 0,
           ...opts
         });
       }
@@ -151,7 +154,8 @@
       idleMinutes: parseInt(idleMinutesEl.value) || 5,
       switchToBlackMinutes: parseInt(switchToBlackMinutesEl.value) || 0,
       dimLevel: parseInt(dimLevelEl.value) || 0,
-      powerMode: powerModeEl.value
+      powerMode: powerModeEl.value,
+      maxFramerate: parseInt(maxFramerateEl.value) || 0
     };
 
     // Get screensaver-specific settings from generator
@@ -204,6 +208,11 @@
   idleMinutesEl.addEventListener('change', save);
   switchToBlackMinutesEl.addEventListener('change', save);
   powerModeEl.addEventListener('change', save);
+  maxFramerateEl.addEventListener('change', () => {
+    destroyPreview();
+    updatePreview();
+    save();
+  });
 
   dimLevelEl.addEventListener('input', () => {
     dimLevelValueEl.textContent = `${dimLevelEl.value}%`;

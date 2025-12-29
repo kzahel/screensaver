@@ -15,6 +15,7 @@ const FlyingToastersScreensaver = {
   toastCount: 6,
   speed: 2,
   targetFps: 60, // Base speed calibrated to 60fps
+  maxFramerate: 0, // 0 = unlimited, or limit to 20/30/60
   direction: 'diagonal-down-left',
   toastDarkness: 'mixed',
 
@@ -40,6 +41,7 @@ const FlyingToastersScreensaver = {
     this.toasterCount = options.toasterCount || 8;
     this.toastCount = options.toastCount || 6;
     this.speed = options.speed || 2;
+    this.maxFramerate = options.maxFramerate || 0;
     this.direction = options.direction || 'diagonal-down-left';
     this.toastDarkness = options.toastDarkness || 'mixed';
     this.directionVector = this.DIRECTIONS[this.direction];
@@ -402,6 +404,15 @@ const FlyingToastersScreensaver = {
   },
 
   animate(timestamp = 0) {
+    // Framerate limiting
+    if (this.maxFramerate > 0 && this.lastFrameTime) {
+      const minFrameTime = 1000 / this.maxFramerate;
+      if (timestamp - this.lastFrameTime < minFrameTime) {
+        this.animationId = requestAnimationFrame((t) => this.animate(t));
+        return;
+      }
+    }
+
     // Calculate delta time for frame-rate independent movement
     const deltaTime = this.lastFrameTime ? (timestamp - this.lastFrameTime) : 16.67;
     this.lastFrameTime = timestamp;

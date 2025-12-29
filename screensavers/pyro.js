@@ -16,6 +16,8 @@ const PyroScreensaver = {
   explosionSize: 'medium',
   colorMode: 'rainbow',
   gravity: 1.0,
+  targetFps: 60,
+  maxFramerate: 0,
 
   // Firework types
   TYPES: ['burst', 'willow', 'ring', 'chrysanthemum', 'palm', 'crossette', 'multistage'],
@@ -42,6 +44,7 @@ const PyroScreensaver = {
     this.explosionSize = options.explosionSize || 'medium';
     this.colorMode = options.colorMode || 'rainbow';
     this.gravity = options.gravity || 1.0;
+    this.maxFramerate = options.maxFramerate || 0;
 
     // Preview mode support
     this.fixedWidth = options.width || null;
@@ -108,17 +111,17 @@ const PyroScreensaver = {
     });
   },
 
-  updateRocket(rocket) {
+  updateRocket(rocket, delta = 1) {
     // Store trail position
     rocket.trail.push({ x: rocket.x, y: rocket.y });
     if (rocket.trail.length > 8) {
       rocket.trail.shift();
     }
 
-    // Update position
-    rocket.x += rocket.vx;
-    rocket.y += rocket.vy;
-    rocket.vy += 0.1; // Slight gravity on rocket
+    // Update position with delta scaling
+    rocket.x += rocket.vx * delta;
+    rocket.y += rocket.vy * delta;
+    rocket.vy += 0.1 * delta; // Slight gravity on rocket
 
     // Check if reached target or slowing down enough
     return rocket.y <= rocket.targetY || rocket.vy >= -1;
@@ -329,27 +332,28 @@ const PyroScreensaver = {
     }
   },
 
-  updateParticle(particle) {
+  updateParticle(particle, delta = 1) {
     // Store trail
     particle.trail.push({ x: particle.x, y: particle.y, life: particle.life });
     if (particle.trail.length > 12) {
       particle.trail.shift();
     }
 
-    // Apply velocity
-    particle.x += particle.vx;
-    particle.y += particle.vy;
+    // Apply velocity with delta scaling
+    particle.x += particle.vx * delta;
+    particle.y += particle.vy * delta;
 
-    // Apply gravity (heavier for willow)
+    // Apply gravity (heavier for willow) with delta scaling
     const gravityMult = particle.willow ? 2.5 : (particle.chrysanthemum ? 0.5 : 1.0);
-    particle.vy += 0.08 * this.gravity * gravityMult;
+    particle.vy += 0.08 * this.gravity * gravityMult * delta;
 
-    // Apply drag
-    particle.vx *= 0.98;
-    particle.vy *= 0.98;
+    // Apply drag (exponential scaling for multiplicative operations)
+    const dragFactor = Math.pow(0.98, delta);
+    particle.vx *= dragFactor;
+    particle.vy *= dragFactor;
 
-    // Decay life
-    particle.life -= particle.decay;
+    // Decay life with delta scaling
+    particle.life -= particle.decay * delta;
 
     // Handle crossette split
     if (particle.crossette && !particle.hasSplit && particle.life < particle.splitTime) {
@@ -412,22 +416,36 @@ const PyroScreensaver = {
   },
 
   animate(timestamp = 0) {
+    // Framerate limiting
+    if (this.maxFramerate > 0 && this.lastFrameTime) {
+      const minFrameTime = 1000 / this.maxFramerate;
+      if (timestamp - this.lastFrameTime < minFrameTime) {
+        this.animationId = requestAnimationFrame((t) => this.animate(t));
+        return;
+      }
+    }
+
+    // Calculate delta time for frame-rate independent movement
+    const deltaTime = this.lastFrameTime ? (timestamp - this.lastFrameTime) : 16.67;
+    this.lastFrameTime = timestamp;
+    const delta = deltaTime / (1000 / this.targetFps);
+
     // Fade effect for trails
     this.ctx.globalAlpha = 0.15;
     this.ctx.fillStyle = '#000';
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.globalAlpha = 1;
 
-    // Launch rockets based on frequency
+    // Launch rockets based on frequency (timestamp-based, already correct)
     const launchInterval = 1000 / (this.launchFrequency / 2);
     if (timestamp - this.lastLaunchTime > launchInterval) {
       this.launchRocket();
       this.lastLaunchTime = timestamp;
     }
 
-    // Update and draw rockets
+    // Update and draw rockets with delta
     this.rockets = this.rockets.filter(rocket => {
-      const exploded = this.updateRocket(rocket);
+      const exploded = this.updateRocket(rocket, delta);
       if (exploded) {
         this.explode(rocket);
         return false;
@@ -436,9 +454,9 @@ const PyroScreensaver = {
       return true;
     });
 
-    // Update and draw particles
+    // Update and draw particles with delta
     this.particles = this.particles.filter(particle => {
-      const dead = this.updateParticle(particle);
+      const dead = this.updateParticle(particle, delta);
       if (!dead) {
         this.drawParticle(particle);
       }

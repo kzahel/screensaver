@@ -53,6 +53,17 @@
         <span class="hint">Darkens the screen for better OLED protection</span>
       </section>
 
+      <section class="setting-group">
+        <label for="max-framerate">Max Framerate</label>
+        <select id="max-framerate">
+          <option value="60">60 FPS (Classic)</option>
+          <option value="30">30 FPS</option>
+          <option value="20">20 FPS (Power Saving)</option>
+          <option value="0">Match Refresh Rate</option>
+        </select>
+        <span class="hint">Lower values save power; 60 FPS is classic screensaver speed</span>
+      </section>
+
       <!-- Dynamically generated screensaver options -->
       <section class="setting-group screensaver-options" id="screensaver-options">
         <!-- Populated by options-generator.js based on selected screensaver -->

@@ -6,7 +6,8 @@ const PipesScreensaver = {
   pipeInterval: null,
   gridSize: 20,
   lastFrameTime: 0,
-  frameDelay: 50,
+  frameDelay: 50, // Default 20fps
+  maxFramerate: 0,
   fixedWidth: null,
   fixedHeight: null,
   maxPipes: 6,
@@ -19,6 +20,15 @@ const PipesScreensaver = {
     // Use fixed dimensions if provided (preview mode)
     this.fixedWidth = options.width || null;
     this.fixedHeight = options.height || null;
+
+    // Apply maxFramerate setting
+    // Pipes is intentionally slow (20fps), but respect lower settings
+    this.maxFramerate = options.maxFramerate || 0;
+    if (this.maxFramerate > 0 && this.maxFramerate < 20) {
+      this.frameDelay = 1000 / this.maxFramerate;
+    } else {
+      this.frameDelay = 50; // Default 20fps
+    }
 
     // Scale grid size for smaller preview
     if (this.fixedWidth && this.fixedWidth < 600) {

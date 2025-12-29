@@ -72,7 +72,11 @@ function startScreensaver(type, settings) {
   // Get defaults from registry and merge with saved settings
   const defaults = ScreensaverRegistry.getDefaults(type);
   const savedSettings = settings[type] || {};
-  const opts = { ...defaults, ...savedSettings };
+  const opts = {
+    ...defaults,
+    ...savedSettings,
+    maxFramerate: settings.maxFramerate  // Pass global framerate setting
+  };
 
   // Text screensaver has a different init signature (legacy)
   if (type === 'text') {

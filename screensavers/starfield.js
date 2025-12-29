@@ -7,21 +7,26 @@ const StarfieldScreensaver = {
   fixedHeight: null,
   centerX: 0,
   centerY: 0,
+  lastFrameTime: 0,
 
   // Configuration
   numStars: 200,
   speed: 5,
   maxDepth: 1000,
   focalLength: 256,
+  targetFps: 60,
+  maxFramerate: 0,
 
   init(options = {}) {
     this.canvas = options.canvas || document.getElementById('screensaver-canvas');
     this.ctx = this.canvas.getContext('2d');
     this.stars = [];
+    this.lastFrameTime = 0;
 
     // Apply settings from options
     this.numStars = options.starDensity || 200;
     this.speed = options.warpSpeed || 5;
+    this.maxFramerate = options.maxFramerate || 0;
 
     // Preview mode support
     this.fixedWidth = options.width || null;
@@ -84,9 +89,9 @@ const StarfieldScreensaver = {
     };
   },
 
-  updateStar(star) {
-    // Move star toward viewer
-    star.z -= this.speed;
+  updateStar(star, delta = 1) {
+    // Move star toward viewer with delta scaling
+    star.z -= this.speed * delta;
 
     // Respawn if too close
     if (star.z <= 1) {
@@ -104,15 +109,15 @@ const StarfieldScreensaver = {
     }
   },
 
-  drawStar(star) {
+  drawStar(star, delta = 1) {
     const ctx = this.ctx;
 
     // Current position
     const screenX = (star.x / star.z) * this.focalLength + this.centerX;
     const screenY = (star.y / star.z) * this.focalLength + this.centerY;
 
-    // Previous position for streak
-    const prevZ = star.z + this.speed;
+    // Previous position for streak (use actual movement distance)
+    const prevZ = star.z + this.speed * delta;
     const prevScreenX = (star.x / prevZ) * this.focalLength + this.centerX;
     const prevScreenY = (star.y / prevZ) * this.focalLength + this.centerY;
 
@@ -141,18 +146,32 @@ const StarfieldScreensaver = {
     }
   },
 
-  animate() {
+  animate(timestamp = 0) {
+    // Framerate limiting
+    if (this.maxFramerate > 0 && this.lastFrameTime) {
+      const minFrameTime = 1000 / this.maxFramerate;
+      if (timestamp - this.lastFrameTime < minFrameTime) {
+        this.animationId = requestAnimationFrame((t) => this.animate(t));
+        return;
+      }
+    }
+
+    // Calculate delta time for frame-rate independent movement
+    const deltaTime = this.lastFrameTime ? (timestamp - this.lastFrameTime) : 16.67;
+    this.lastFrameTime = timestamp;
+    const delta = deltaTime / (1000 / this.targetFps);
+
     // Clear to black
     this.ctx.fillStyle = '#000';
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     // Update and draw all stars
     for (const star of this.stars) {
-      this.updateStar(star);
-      this.drawStar(star);
+      this.updateStar(star, delta);
+      this.drawStar(star, delta);
     }
 
-    this.animationId = requestAnimationFrame(() => this.animate());
+    this.animationId = requestAnimationFrame((t) => this.animate(t));
   },
 
   destroy() {

@@ -5,23 +5,28 @@ const MystifyScreensaver = {
   animationId: null,
   fixedWidth: null,
   fixedHeight: null,
+  lastFrameTime: 0,
 
   // Configuration
   numPolygons: 2,
   numVertices: 4,
   trailLength: 50,
   speed: 3,
+  targetFps: 60,
+  maxFramerate: 0,
 
   init(options = {}) {
     this.canvas = options.canvas || document.getElementById('screensaver-canvas');
     this.ctx = this.canvas.getContext('2d');
     this.polygons = [];
+    this.lastFrameTime = 0;
 
     // Apply settings from options
     this.numPolygons = options.numPolygons || 2;
     this.numVertices = options.numVertices || 4;
     this.trailLength = options.trailLength || 50;
     this.speed = options.speed || 3;
+    this.maxFramerate = options.maxFramerate || 0;
 
     // Preview mode support
     this.fixedWidth = options.width || null;
@@ -95,7 +100,7 @@ const MystifyScreensaver = {
     };
   },
 
-  updatePolygon(polygon) {
+  updatePolygon(polygon, delta = 1) {
     const width = this.canvas.width;
     const height = this.canvas.height;
 
@@ -111,11 +116,11 @@ const MystifyScreensaver = {
       polygon.trail.shift();
     }
 
-    // Update each vertex
+    // Update each vertex with delta-scaled movement
     for (const vertex of polygon.vertices) {
       // Move
-      vertex.x += vertex.vx;
-      vertex.y += vertex.vy;
+      vertex.x += vertex.vx * delta;
+      vertex.y += vertex.vy * delta;
 
       // Bounce off edges
       if (vertex.x <= 0) {
@@ -135,8 +140,8 @@ const MystifyScreensaver = {
       }
     }
 
-    // Cycle color
-    polygon.hue = (polygon.hue + 0.5) % 360;
+    // Cycle color with delta scaling
+    polygon.hue = (polygon.hue + 0.5 * delta) % 360;
   },
 
   drawPolygonShape(vertices, hue, alpha) {
@@ -169,18 +174,32 @@ const MystifyScreensaver = {
     this.drawPolygonShape(polygon.vertices, polygon.hue, 1);
   },
 
-  animate() {
+  animate(timestamp = 0) {
+    // Framerate limiting
+    if (this.maxFramerate > 0 && this.lastFrameTime) {
+      const minFrameTime = 1000 / this.maxFramerate;
+      if (timestamp - this.lastFrameTime < minFrameTime) {
+        this.animationId = requestAnimationFrame((t) => this.animate(t));
+        return;
+      }
+    }
+
+    // Calculate delta time for frame-rate independent movement
+    const deltaTime = this.lastFrameTime ? (timestamp - this.lastFrameTime) : 16.67;
+    this.lastFrameTime = timestamp;
+    const delta = deltaTime / (1000 / this.targetFps);
+
     // Clear to black
     this.ctx.fillStyle = '#000';
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     // Update and draw all polygons
     for (const polygon of this.polygons) {
-      this.updatePolygon(polygon);
+      this.updatePolygon(polygon, delta);
       this.drawPolygon(polygon);
     }
 
-    this.animationId = requestAnimationFrame(() => this.animate());
+    this.animationId = requestAnimationFrame((t) => this.animate(t));
   },
 
   destroy() {

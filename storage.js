@@ -4,7 +4,8 @@ const CORE_DEFAULTS = {
   powerMode: 'normal',
   idleMinutes: 5,
   switchToBlackMinutes: 0,
-  dimLevel: 0
+  dimLevel: 0,
+  maxFramerate: 60  // 0 = match refresh rate, or 20/30/60
 };
 
 // Get all defaults including screensaver-specific options from registry
