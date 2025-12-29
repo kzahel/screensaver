@@ -39,11 +39,11 @@ const Cars1Screensaver = {
     this.lightTimer = 0;
     this.lightsOn = false;
 
-    // Apply settings (parse numbers to avoid string concatenation bugs)
-    this.vehicleCount = parseInt(options.vehicleCount) || 8;
-    this.speed = parseFloat(options.speed) || 2;
-    this.colorChange = options.colorChange !== undefined ? options.colorChange : true;
-    this.maxFramerate = parseInt(options.maxFramerate) || 0;
+    // Apply settings (types are automatically parsed by OptionsGenerator/Registry)
+    this.vehicleCount = options.vehicleCount ?? 8;
+    this.speed = options.speed ?? 2;
+    this.colorChange = options.colorChange ?? true;
+    this.maxFramerate = options.maxFramerate ?? 0;
 
     // Preview mode support - only use fixed dimensions if canvas is explicitly passed
     // (this distinguishes preview mode from fullscreen with saved settings)

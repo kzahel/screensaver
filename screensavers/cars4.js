@@ -64,12 +64,12 @@ const Cars4Screensaver = {
     this.propellerRotation = 0;
     this.rotorRotation = 0;
 
-    // Apply settings
-    this.carDensity = options.carDensity || 'medium';
-    this.aircraftFrequency = options.aircraftFrequency || 'occasional';
-    this.showClouds = options.showClouds !== undefined ? options.showClouds : true;
-    this.speed = options.speed || 2;
-    this.maxFramerate = options.maxFramerate || 0;
+    // Apply settings (types are automatically parsed by OptionsGenerator/Registry)
+    this.carDensity = options.carDensity ?? 'medium';
+    this.aircraftFrequency = options.aircraftFrequency ?? 'occasional';
+    this.showClouds = options.showClouds ?? true;
+    this.speed = options.speed ?? 2;
+    this.maxFramerate = options.maxFramerate ?? 0;
 
     // Preview mode support
     this.fixedWidth = options.width || null;

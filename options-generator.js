@@ -157,16 +157,29 @@ const OptionsGenerator = {
   },
 
   getValues() {
+    const config = this.currentType ? ScreensaverRegistry.get(this.currentType) : null;
     const values = {};
+
     for (const [key, el] of Object.entries(this.elements)) {
       if (!el || !el.input) continue;
 
+      // Get raw value
+      let rawValue;
       if (el.input.type === 'checkbox') {
-        values[key] = el.input.checked;
-      } else if (el.input.type === 'range' || el.input.type === 'number') {
-        values[key] = parseFloat(el.input.value);
+        rawValue = el.input.checked;
       } else {
-        values[key] = el.input.value;
+        rawValue = el.input.value;
+      }
+
+      // Use registry to parse with correct type if available
+      if (config && config.options[key]) {
+        values[key] = ScreensaverRegistry.parseValue(rawValue, config.options[key]);
+      } else if (el.input.type === 'checkbox') {
+        values[key] = rawValue;
+      } else if (el.input.type === 'range' || el.input.type === 'number') {
+        values[key] = parseFloat(rawValue);
+      } else {
+        values[key] = rawValue;
       }
     }
     return values;

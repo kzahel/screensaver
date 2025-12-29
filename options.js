@@ -14,6 +14,12 @@
   const maxFramerateEl = document.getElementById('max-framerate');
   const testBtn = document.getElementById('test-btn');
 
+  // Random mode elements
+  const randomCycleSectionEl = document.getElementById('random-cycle-section');
+  const randomPoolSectionEl = document.getElementById('random-pool-section');
+  const randomCycleMinutesEl = document.getElementById('random-cycle-minutes');
+  const randomPoolCheckboxesEl = document.getElementById('random-pool-checkboxes');
+
   // Preview elements
   const previewContainer = document.getElementById('preview-container');
   const previewCanvas = document.getElementById('preview-canvas');
@@ -42,13 +48,82 @@
   dimLevelEl.value = settings.dimLevel;
   dimLevelValueEl.textContent = `${settings.dimLevel}%`;
   maxFramerateEl.value = settings.maxFramerate;
+  randomCycleMinutesEl.value = settings.randomCycleMinutes;
+
+  // Generate random pool checkboxes and apply saved settings
+  generateRandomPoolCheckboxes();
+  setEnabledForRandom(settings.enabledForRandom);
 
   updateEnabledState();
+  updateRandomOptionsVisibility();
   updateOptionsUI();
   updatePreview();
 
   function updateEnabledState() {
     settingsPanel.classList.toggle('disabled', !enabledCheckbox.checked);
+  }
+
+  function updateRandomOptionsVisibility() {
+    const isRandom = screensaverTypeEl.value === 'random';
+    randomCycleSectionEl.classList.toggle('visible', isRandom);
+    randomPoolSectionEl.classList.toggle('visible', isRandom);
+  }
+
+  function generateRandomPoolCheckboxes() {
+    randomPoolCheckboxesEl.innerHTML = '';
+
+    // Get all screensaver types including black
+    const types = ScreensaverRegistry.listWithBlack();
+
+    for (const type of types) {
+      const label = document.createElement('label');
+      label.className = 'checkbox-item';
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.id = `random-pool-${type}`;
+      checkbox.value = type;
+      checkbox.checked = true; // Default to checked
+
+      const name = type === 'black' ? 'Black Screen' : ScreensaverRegistry.get(type)?.name || type;
+
+      label.appendChild(checkbox);
+      label.appendChild(document.createTextNode(` ${name}`));
+      randomPoolCheckboxesEl.appendChild(label);
+
+      checkbox.addEventListener('change', () => {
+        // Update preview with new random selection when pool changes
+        destroyPreview();
+        updatePreview();
+        save();
+      });
+    }
+  }
+
+  function getEnabledForRandom() {
+    const checkboxes = randomPoolCheckboxesEl.querySelectorAll('input[type="checkbox"]');
+    const enabled = [];
+    let allChecked = true;
+
+    for (const cb of checkboxes) {
+      if (cb.checked) {
+        enabled.push(cb.value);
+      } else {
+        allChecked = false;
+      }
+    }
+
+    // Return null if all are checked (means "all enabled")
+    return allChecked ? null : (enabled.length === 0 ? null : enabled);
+  }
+
+  function setEnabledForRandom(enabledTypes) {
+    const checkboxes = randomPoolCheckboxesEl.querySelectorAll('input[type="checkbox"]');
+
+    for (const cb of checkboxes) {
+      // If enabledTypes is null, check all; otherwise check if type is in the array
+      cb.checked = enabledTypes === null || enabledTypes.includes(cb.value);
+    }
   }
 
   function updateOptionsUI() {
@@ -91,13 +166,29 @@
     previewContainer.classList.remove('black-screen');
   }
 
+  function getRandomPreviewType() {
+    let types = ScreensaverRegistry.listWithBlack();
+    const enabled = getEnabledForRandom();
+
+    // Filter by enabled screensavers if configured
+    if (enabled && enabled.length > 0) {
+      types = types.filter(t => enabled.includes(t));
+    }
+
+    // Fallback if filtering left us empty
+    if (types.length === 0) {
+      types = ScreensaverRegistry.listWithBlack();
+    }
+
+    return types[Math.floor(Math.random() * types.length)];
+  }
+
   function updatePreview() {
     let type = screensaverTypeEl.value;
 
-    // For random, pick first screensaver for preview
+    // For random, pick a random screensaver from the enabled pool
     if (type === 'random') {
-      const types = ScreensaverRegistry.list();
-      type = types.length > 0 ? types[0] : 'black';
+      type = getRandomPreviewType();
     }
 
     // Update dim overlay
@@ -155,7 +246,9 @@
       switchToBlackMinutes: parseInt(switchToBlackMinutesEl.value) || 0,
       dimLevel: parseInt(dimLevelEl.value) || 0,
       powerMode: powerModeEl.value,
-      maxFramerate: parseInt(maxFramerateEl.value) || 0
+      maxFramerate: parseInt(maxFramerateEl.value) || 0,
+      randomCycleMinutes: parseInt(randomCycleMinutesEl.value) || 0,
+      enabledForRandom: getEnabledForRandom()
     };
 
     // Get screensaver-specific settings from generator
@@ -178,6 +271,7 @@
     const newSettings = getCurrentSettings();
     newSettings.idleMinutes = Math.max(1, Math.min(60, newSettings.idleMinutes));
     newSettings.switchToBlackMinutes = Math.max(0, Math.min(60, newSettings.switchToBlackMinutes));
+    newSettings.randomCycleMinutes = Math.max(0, Math.min(60, newSettings.randomCycleMinutes));
 
     // Update local settings cache
     settings = newSettings;
@@ -199,11 +293,14 @@
   });
 
   screensaverTypeEl.addEventListener('change', () => {
+    updateRandomOptionsVisibility();
     updateOptionsUI();
     destroyPreview();
     updatePreview();
     save();
   });
+
+  randomCycleMinutesEl.addEventListener('change', save);
 
   idleMinutesEl.addEventListener('change', save);
   switchToBlackMinutesEl.addEventListener('change', save);

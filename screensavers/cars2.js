@@ -57,13 +57,13 @@ const Cars2Screensaver = {
     this.needsLaneInit = true;
     this.lastCanvasHeight = 0;
 
-    // Apply settings (parse numbers to avoid string concatenation bugs)
-    this.laneCount = parseInt(options.laneCount) || 4;
-    this.density = options.density || 'medium';
-    this.speed = parseFloat(options.speed) || 2;
-    this.includeEmergency = options.includeEmergency !== undefined ? options.includeEmergency : true;
-    this.includeConstruction = options.includeConstruction !== undefined ? options.includeConstruction : true;
-    this.maxFramerate = parseInt(options.maxFramerate) || 0;
+    // Apply settings (types are automatically parsed by OptionsGenerator/Registry)
+    this.laneCount = options.laneCount ?? 4;
+    this.density = options.density ?? 'medium';
+    this.speed = options.speed ?? 2;
+    this.includeEmergency = options.includeEmergency ?? true;
+    this.includeConstruction = options.includeConstruction ?? true;
+    this.maxFramerate = options.maxFramerate ?? 0;
 
     // Preview mode support - only use fixed dimensions if canvas is explicitly passed
     // (this distinguishes preview mode from fullscreen with saved settings)

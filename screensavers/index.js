@@ -11,7 +11,8 @@ const SCREENSAVER_MODULES = [
   'cars1',
   'cars2',
   'cars3',
-  'cars4'
+  'cars4',
+  'emoji-city'
 ];
 
 async function loadAllScreensavers() {

@@ -5,7 +5,9 @@ const CORE_DEFAULTS = {
   idleMinutes: 5,
   switchToBlackMinutes: 0,
   dimLevel: 0,
-  maxFramerate: 60  // 0 = match refresh rate, or 20/30/60
+  maxFramerate: 60,  // 0 = match refresh rate, or 20/30/60
+  randomCycleMinutes: 0,  // 0 = disabled, or cycle every N minutes
+  enabledForRandom: null  // null = all enabled, or array of screensaver types
 };
 
 // Get all defaults including screensaver-specific options from registry

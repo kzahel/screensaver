@@ -3,18 +3,41 @@ let mouseMoveStartTime = null;
 let resetTimer = null;
 let activeScreensaver = null;
 let switchToBlackTimeout = null;
+let randomCycleInterval = null;
 let currentType = null;
+let currentSettings = null;
+
+function getRandomType(settings, excludeType = null) {
+  let types = ScreensaverRegistry.listWithBlack();
+
+  // Filter by enabled screensavers if configured
+  if (settings.enabledForRandom && settings.enabledForRandom.length > 0) {
+    types = types.filter(t => settings.enabledForRandom.includes(t));
+  }
+
+  // If we have multiple options, try to avoid picking the same one
+  if (excludeType && types.length > 1) {
+    types = types.filter(t => t !== excludeType);
+  }
+
+  // Fallback to all types if filtering left us empty
+  if (types.length === 0) {
+    types = ScreensaverRegistry.listWithBlack();
+  }
+
+  return types[Math.floor(Math.random() * types.length)];
+}
 
 async function initScreensaver() {
   const { loadSettings } = window.ScreensaverSettings;
   const settings = await loadSettings();
+  currentSettings = settings;
 
   let type = settings.screensaverType;
 
   // Handle random selection using registry
   if (type === 'random') {
-    const types = ScreensaverRegistry.listWithBlack();
-    type = types[Math.floor(Math.random() * types.length)];
+    type = getRandomType(settings);
   }
 
   currentType = type;
@@ -38,6 +61,35 @@ async function initScreensaver() {
       switchToBlack();
     }, delayMs);
   }
+
+  // Set up random cycle timer if configured and in random mode
+  if (settings.screensaverType === 'random' && settings.randomCycleMinutes > 0) {
+    const cycleMs = settings.randomCycleMinutes * 60 * 1000;
+    console.log('Will cycle to new random screensaver every', settings.randomCycleMinutes, 'minutes');
+
+    randomCycleInterval = setInterval(() => {
+      cycleToNextRandom();
+    }, cycleMs);
+  }
+}
+
+function cycleToNextRandom() {
+  console.log('Cycling to next random screensaver');
+
+  // Destroy current screensaver
+  if (activeScreensaver?.destroy) {
+    activeScreensaver.destroy();
+    activeScreensaver = null;
+  }
+
+  // Pick a new random type (avoiding current if possible)
+  const newType = getRandomType(currentSettings, currentType);
+  currentType = newType;
+
+  console.log('Switched to:', newType);
+
+  // Start the new screensaver
+  startScreensaver(newType, currentSettings);
 }
 
 function startScreensaver(type, settings) {
@@ -93,6 +145,12 @@ function switchToBlack() {
     activeScreensaver = null;
   }
 
+  // Clear the random cycle timer when switching to black
+  if (randomCycleInterval) {
+    clearInterval(randomCycleInterval);
+    randomCycleInterval = null;
+  }
+
   // Hide all elements
   const canvas = document.getElementById('screensaver-canvas');
   const textContainer = document.getElementById('text-container');
@@ -114,6 +172,10 @@ document.addEventListener('visibilitychange', () => {
       clearTimeout(switchToBlackTimeout);
       switchToBlackTimeout = null;
     }
+    if (randomCycleInterval) {
+      clearInterval(randomCycleInterval);
+      randomCycleInterval = null;
+    }
   } else {
     console.log('Page visible - resuming screensaver');
     initScreensaver();
@@ -126,6 +188,9 @@ function closeScreensaver() {
   }
   if (switchToBlackTimeout) {
     clearTimeout(switchToBlackTimeout);
+  }
+  if (randomCycleInterval) {
+    clearInterval(randomCycleInterval);
   }
 
   if (chrome?.runtime?.sendMessage) {

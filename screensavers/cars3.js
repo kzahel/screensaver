@@ -49,12 +49,12 @@ const Cars3Screensaver = {
     this.confetti = [];
     this.lastFrameTime = 0;
 
-    // Apply settings (parse numbers to avoid string concatenation bugs)
-    this.carCount = parseInt(options.carCount) || 5;
-    this.speedSetting = options.speed || 'racing';
-    this.trailLength = parseInt(options.trailLength) || 30;
-    this.showConfetti = options.showConfetti !== undefined ? options.showConfetti : true;
-    this.maxFramerate = parseInt(options.maxFramerate) || 0;
+    // Apply settings (types are automatically parsed by OptionsGenerator/Registry)
+    this.carCount = options.carCount ?? 5;
+    this.speedSetting = options.speed ?? 'racing';
+    this.trailLength = options.trailLength ?? 30;
+    this.showConfetti = options.showConfetti ?? true;
+    this.maxFramerate = options.maxFramerate ?? 0;
 
     // Preview mode support - only use fixed dimensions if canvas is explicitly passed
     // (this distinguishes preview mode from fullscreen with saved settings)

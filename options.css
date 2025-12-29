@@ -112,6 +112,33 @@ label:has(input[type="checkbox"]) {
   font-size: 13px;
 }
 
+/* Random mode options (cycle timer and pool selection) */
+.random-options {
+  display: none;
+}
+
+.random-options.visible {
+  display: block;
+}
+
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 8px;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.checkbox-item input[type="checkbox"] {
+  margin-right: 6px;
+}
+
 /* Dynamically generated screensaver options */
 .screensaver-options {
   border-top: 1px solid #333;
