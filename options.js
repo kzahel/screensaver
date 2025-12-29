@@ -21,6 +21,10 @@
   const randomCycleValueEl = document.getElementById('random-cycle-value');
   const randomPoolCheckboxesEl = document.getElementById('random-pool-checkboxes');
 
+  // Slider value display elements
+  const idleMinutesValueEl = document.getElementById('idle-minutes-value');
+  const switchToBlackValueEl = document.getElementById('switch-to-black-value');
+
   // Preview elements
   const previewContainer = document.getElementById('preview-container');
   const previewCanvas = document.getElementById('preview-canvas');
@@ -59,6 +63,8 @@
   updateEnabledState();
   updateRandomOptionsVisibility();
   updateCycleValueDisplay();
+  updateIdleMinutesDisplay();
+  updateSwitchToBlackDisplay();
   updateOptionsUI();
   updatePreview();
   updatePreviewCycling();
@@ -77,6 +83,26 @@
   function updateCycleValueDisplay() {
     const minutes = parseFloat(randomCycleMinutesEl.value) || 0;
     randomCycleValueEl.textContent = formatCycleTime(minutes);
+  }
+
+  function formatMinutes(minutes) {
+    if (minutes === 1) return '1 minute';
+    return `${minutes} minutes`;
+  }
+
+  function formatMinutesOrNever(minutes) {
+    if (minutes === 0) return 'never';
+    return formatMinutes(minutes);
+  }
+
+  function updateIdleMinutesDisplay() {
+    const minutes = parseInt(idleMinutesEl.value) || 1;
+    idleMinutesValueEl.textContent = formatMinutes(minutes);
+  }
+
+  function updateSwitchToBlackDisplay() {
+    const minutes = parseInt(switchToBlackMinutesEl.value) || 0;
+    switchToBlackValueEl.textContent = formatMinutesOrNever(minutes);
   }
 
   function updateRandomOptionsVisibility() {
@@ -312,8 +338,8 @@
 
   async function save() {
     const newSettings = getCurrentSettings();
-    newSettings.idleMinutes = Math.max(1, Math.min(60, newSettings.idleMinutes));
-    newSettings.switchToBlackMinutes = Math.max(0, Math.min(60, newSettings.switchToBlackMinutes));
+    newSettings.idleMinutes = Math.max(1, Math.min(30, newSettings.idleMinutes));
+    newSettings.switchToBlackMinutes = Math.max(0, Math.min(30, newSettings.switchToBlackMinutes));
     newSettings.randomCycleMinutes = Math.max(0, Math.min(60, newSettings.randomCycleMinutes));
 
     // Update local settings cache
@@ -350,8 +376,14 @@
     save();
   });
 
-  idleMinutesEl.addEventListener('change', save);
-  switchToBlackMinutesEl.addEventListener('change', save);
+  idleMinutesEl.addEventListener('input', () => {
+    updateIdleMinutesDisplay();
+    save();
+  });
+  switchToBlackMinutesEl.addEventListener('input', () => {
+    updateSwitchToBlackDisplay();
+    save();
+  });
   powerModeEl.addEventListener('change', save);
   maxFramerateEl.addEventListener('change', () => {
     destroyPreview();
