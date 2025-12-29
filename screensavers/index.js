@@ -7,7 +7,11 @@ const SCREENSAVER_MODULES = [
   'starfield',
   'mystify',
   'pyro',
-  'flying-toasters'
+  'flying-toasters',
+  'cars1',
+  'cars2',
+  'cars3',
+  'cars4'
 ];
 
 async function loadAllScreensavers() {
