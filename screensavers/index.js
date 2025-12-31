@@ -8,6 +8,7 @@ const SCREENSAVER_MODULES = [
   'mystify',
   'pyro',
   'flying-toasters',
+  'matrix',
   'cars1',
   'cars2',
   'cars3',

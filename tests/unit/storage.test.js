@@ -3,7 +3,46 @@ const path = require('path');
 const vm = require('vm');
 
 describe('storage.js', () => {
-  let loadSettings, saveSettings, DEFAULT_SETTINGS;
+  let loadSettings, saveSettings, CORE_DEFAULTS, getDefaultSettings;
+
+  // Mock ScreensaverRegistry for tests
+  const mockRegistry = {
+    _screensavers: {
+      text: {
+        options: {
+          showTime: { default: true },
+          showDate: { default: true },
+          showQuotes: { default: true },
+          customText: { default: '' }
+        }
+      },
+      starfield: {
+        options: {
+          starDensity: { default: 200 },
+          warpSpeed: { default: 5 }
+        }
+      }
+    },
+    list() {
+      return ['text', 'starfield'];
+    },
+    getDefaults(type) {
+      const config = this._screensavers[type];
+      if (!config) return {};
+      const defaults = {};
+      for (const [key, opt] of Object.entries(config.options)) {
+        defaults[key] = opt.default;
+      }
+      return defaults;
+    },
+    getAllDefaults() {
+      const result = {};
+      for (const type of this.list()) {
+        result[type] = this.getDefaults(type);
+      }
+      return result;
+    }
+  };
 
   beforeEach(() => {
     jest.resetModules();
@@ -11,7 +50,8 @@ describe('storage.js', () => {
     const context = {
       window: {},
       chrome: global.chrome,
-      console: console
+      console: console,
+      ScreensaverRegistry: mockRegistry
     };
     vm.createContext(context);
 
@@ -21,17 +61,36 @@ describe('storage.js', () => {
     );
     vm.runInContext(storageCode, context);
 
-    ({ loadSettings, saveSettings, DEFAULT_SETTINGS } = context.window.ScreensaverSettings);
+    ({ loadSettings, saveSettings, CORE_DEFAULTS, getDefaultSettings } = context.window.ScreensaverSettings);
   });
 
-  describe('DEFAULT_SETTINGS', () => {
+  describe('CORE_DEFAULTS', () => {
     it('should have correct default values', () => {
-      expect(DEFAULT_SETTINGS).toEqual({
+      expect(CORE_DEFAULTS).toEqual({
         screensaverType: 'black',
         powerMode: 'normal',
         idleMinutes: 5,
         switchToBlackMinutes: 0,
         dimLevel: 0,
+        maxFramerate: 60,
+        randomCycleMinutes: 0,
+        enabledForRandom: null
+      });
+    });
+  });
+
+  describe('getDefaultSettings', () => {
+    it('should combine core defaults with registry defaults', () => {
+      const defaults = getDefaultSettings();
+      expect(defaults).toEqual({
+        screensaverType: 'black',
+        powerMode: 'normal',
+        idleMinutes: 5,
+        switchToBlackMinutes: 0,
+        dimLevel: 0,
+        maxFramerate: 60,
+        randomCycleMinutes: 0,
+        enabledForRandom: null,
         text: {
           showTime: true,
           showDate: true,
@@ -54,7 +113,16 @@ describe('storage.js', () => {
       const settings = await loadSettings();
 
       expect(chrome.storage.sync.get).toHaveBeenCalledWith('settings');
-      expect(settings).toEqual({ enabled: true, ...DEFAULT_SETTINGS });
+      expect(settings.enabled).toBe(true);
+      expect(settings.screensaverType).toBe('black');
+      expect(settings.powerMode).toBe('normal');
+      expect(settings.idleMinutes).toBe(5);
+      expect(settings.text).toEqual({
+        showTime: true,
+        showDate: true,
+        customText: '',
+        showQuotes: true
+      });
     });
 
     it('should merge stored settings with defaults', async () => {
@@ -64,6 +132,7 @@ describe('storage.js', () => {
           powerMode: 'display'
         }
       });
+      chrome.storage.local.get.mockResolvedValue({});
 
       const settings = await loadSettings();
 
@@ -82,6 +151,7 @@ describe('storage.js', () => {
           }
         }
       });
+      chrome.storage.local.get.mockResolvedValue({});
 
       const settings = await loadSettings();
 
@@ -93,8 +163,9 @@ describe('storage.js', () => {
   });
 
   describe('saveSettings', () => {
-    it('should save settings to chrome.storage.sync', async () => {
+    it('should save settings to chrome.storage.sync and enabled to local', async () => {
       const newSettings = {
+        enabled: true,
         screensaverType: 'text',
         powerMode: 'system',
         text: {
@@ -106,10 +177,24 @@ describe('storage.js', () => {
       };
 
       chrome.storage.sync.set.mockResolvedValue();
+      chrome.storage.local.set.mockResolvedValue();
 
       await saveSettings(newSettings);
 
-      expect(chrome.storage.sync.set).toHaveBeenCalledWith({ settings: newSettings });
+      // enabled should go to local storage, rest to sync
+      expect(chrome.storage.sync.set).toHaveBeenCalledWith({
+        settings: {
+          screensaverType: 'text',
+          powerMode: 'system',
+          text: {
+            showTime: false,
+            showDate: true,
+            customText: 'Test',
+            showQuotes: false
+          }
+        }
+      });
+      expect(chrome.storage.local.set).toHaveBeenCalledWith({ enabled: true });
     });
   });
 });

@@ -20,6 +20,7 @@ A comprehensive TODO list of classic screensavers to implement, organized by pla
 | Text/Clock | Generic | ✅ |
 | Mystify | Windows 3.1 | ✅ |
 | Pyro! | Mac 1987 | ✅ |
+| Matrix Rain | The Matrix (1999) | ✅ |
 
 ---
 
@@ -236,7 +237,7 @@ The legendary open-source collection with 240+ screensavers, created by Jamie Za
 
 | Screensaver | Description | Priority | Notes |
 |-------------|-------------|----------|-------|
-| **GLMatrix** | Matrix "digital rain" falling code | 🔜 | The Matrix (1999) inspired |
+| **GLMatrix** | Matrix "digital rain" falling code | ✅ | The Matrix (1999) inspired |
 | **Phosphor** | Green phosphor terminal with scrolling text | 🔜 | Fully functional VT100 emulator! |
 | **Apple2** | Apple II computer simulation with BASIC | 🔜 | Also a functional terminal emulator |
 | **BSOD** | Blue Screen of Death simulator - many OS variants | 🔜 | Windows BSOD, Linux kernel panic, Mac Sad Mac, Amiga Guru Meditation, Darwin crash, systemd, bitlocker, GLaDOS, Tivo, Nintendo, and many more! |
@@ -365,7 +366,7 @@ The legendary open-source collection with 240+ screensavers, created by Jamie Za
 
 | Screensaver | Description | Priority | Notes |
 |-------------|-------------|----------|-------|
-| **Matrix Rain** | Falling green code | 🔜 | Countless versions exist. XScreenSaver's GLMatrix is definitive. |
+| **Matrix Rain** | Falling green code | ✅ | Countless versions exist. XScreenSaver's GLMatrix is definitive. |
 
 ### Fliqlo (2000s)
 
@@ -398,11 +399,11 @@ The legendary open-source collection with 240+ screensavers, created by Jamie Za
 
 ### Phase 1: Icons (Immediate)
 These are THE screensavers everyone remembers:
-1. Flying Toasters (After Dark)
-2. Starfield / Flying Windows (Windows 3.1)
+1. ~~Flying Toasters (After Dark)~~ ✅
+2. ~~Starfield / Flying Windows (Windows 3.1)~~ ✅
 3. 3D Maze (Windows 95)
-4. Matrix Rain / GLMatrix
-5. Mystify (Windows 3.1)
+4. ~~Matrix Rain / GLMatrix~~ ✅
+5. ~~Mystify (Windows 3.1)~~ ✅
 
 ### Phase 2: Classic Favorites
 6. BSOD (XScreenSaver)
