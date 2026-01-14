@@ -90,8 +90,9 @@ describe('background.js message handlers', () => {
 
       expect(chrome.windows.create).toHaveBeenCalledWith({
         url: 'chrome-extension://test-id/screensaver.html',
-        state: 'fullscreen',
-        type: 'popup'
+        state: 'maximized',
+        type: 'popup',
+        focused: true
       });
     });
   });
