@@ -70,13 +70,20 @@ async function launchScreensaver() {
     const url = chrome.runtime.getURL('screensaver.html');
     console.log('Screensaver URL:', url);
 
+    // On macOS, state:'fullscreen' in create() doesn't work reliably.
+    // Workaround: create maximized window, then update to fullscreen.
     const window = await chrome.windows.create({
       url: url,
-      state: 'fullscreen',
-      type: 'popup'
+      state: 'maximized',
+      type: 'popup',
+      focused: true
     });
     screensaverWindowId = window.id;
     console.log('Screensaver window created with id:', screensaverWindowId);
+
+    // Now update to fullscreen (works on macOS)
+    await chrome.windows.update(screensaverWindowId, { state: 'fullscreen' });
+    console.log('Window updated to fullscreen');
   } catch (err) {
     console.error('Failed to create screensaver window:', err);
   }
